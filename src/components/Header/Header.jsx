@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { Link, NavLink } from 'react-router';
+import { Link, NavLink, useNavigate } from 'react-router';
 import './Header.css';
 import useAuth from '../../hooks/useAuth';
+import { toast } from 'react-toastify';
 
 const Header = () => {
     const { user, signOutUser } = useAuth();
     const [showDropdown, setShowDropdown] = useState(false);
+    const navigate = useNavigate();
 
     const links = (
         <>
@@ -24,11 +26,7 @@ const Header = () => {
                         </svg>
                     </span>
                 </NavLink>
-            </li>        
-
-
-            
-
+            </li>
             {
                 user && <>   
                      <li><NavLink to="/add-post" className={({ isActive }) => isActive ? 'active' : ''}>Add Post</NavLink></li>                 
@@ -41,6 +39,12 @@ const Header = () => {
     const handleLogout = async () => {
         try {
             await signOutUser();
+            // Optionally, you can redirect the user or show a success message
+            toast.success('Logged out successfully!');
+            navigate('/');
+            
+            
+
             setShowDropdown(false);
         } catch (error) {
             console.error('Logout failed:', error);
@@ -77,7 +81,10 @@ const Header = () => {
                 </div>
                 <div className="navbar-end flex items-center gap-2">
                     {!user ? (
-                        <Link to="/join-us" className="btn btn-outline btn-primary">Join Us</Link>
+                        <>
+                            <Link to="/register" className="btn btn-outline btn-secondary">Register</Link>
+                            <Link to="/join-us" className="btn btn-outline btn-primary">Join Us</Link>
+                        </>
                     ) : (
                         <div className="relative">
                             <img
