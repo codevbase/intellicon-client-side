@@ -8,15 +8,5 @@ const axiosInstance = axios.create({
   withCredentials: true, // if you need to send cookies
 });
 
-// Optional: Add interceptors for auth or error handling
-// axiosInstance.interceptors.request.use(config => {
-//   // Add auth token if needed
-//   return config;
-// }, error => Promise.reject(error));
-
-// axiosInstance.interceptors.response.use(
-//   response => response,
-//   error => Promise.reject(error)
-// );
 
 export default axiosInstance;
