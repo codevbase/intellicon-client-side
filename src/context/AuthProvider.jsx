@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { AuthContext } from './AuthContext';
 import { auth } from '../config/firebase.config';
 import { createUserWithEmailAndPassword, GoogleAuthProvider, onAuthStateChanged, signInWithEmailAndPassword, signInWithPopup, signOut } from 'firebase/auth';
+import axiosSecure from '../api/axiosSecure';
 // import axiosInstance from '../api/axiosInstance';
 
 const AuthProvider = ({ children }) => {
@@ -46,24 +47,29 @@ const AuthProvider = ({ children }) => {
 
     // Set user state when auth state changes
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+        const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
             currentUser? console.log('Current user from observer:', currentUser): console.log('No user is signed in');
             setUser(currentUser);
             setLoading(false);
-            // if(currentUser?.email){
-            //    const userData = { email: currentUser.email }
-            //     axiosInstance.post('/jwt', userData, {
-            //         withCredentials: true
-            //     })
-            //     .then(res => {
-            //         console.log('token after jwt', res.data);
-            //     })
-            //     .catch(err => {
-            //         console.error('Error fetching JWT token:', err);
-            //     });
 
-            // }
-
+            // If user is logged in, exchange Firebase ID token for JWT
+            if (currentUser) {
+              try {
+                const idToken = await currentUser.getIdToken();
+                await axiosSecure.post('/jwt', {}, {
+                  headers: {
+                    Authorization: `Bearer ${idToken}`
+                  }
+                }).then(res => {
+                    console.log('token after jwt', res.data);
+                }).catch(err => {
+                    console.error('Error fetching JWT token:', err);
+                });
+                // Now your JWT httpOnly cookie is set!
+              } catch (err) {
+                console.error('Error fetching JWT token:', err);
+              }
+            }
         });
         return () => unsubscribe();
     }, []);
