@@ -12,7 +12,6 @@ const AddPost = () => {
   const [formData, setFormData] = useState({
     authorImage: user?.photoURL || '',
     authorName: user?.displayName || '',
-    authorEmail: user?.email || '',
     title: '',
     description: '',
     tag: '',
@@ -70,12 +69,11 @@ const AddPost = () => {
 
     try {
       const postData = {
-        ...formData,
-        createdAt: new Date().toISOString(),
-        postTime: new Date().toISOString(),
-        author: user?.email,
-        authorName: user?.displayName,
-        authorImage: user?.photoURL
+        title: formData.title,
+        description: formData.description,
+        tag: formData.tag,
+        authorName: formData.authorName,
+        authorImage: formData.authorImage
       };
 
       await createPostMutation.mutateAsync(postData);
@@ -84,7 +82,6 @@ const AddPost = () => {
       setFormData({
         authorImage: user?.photoURL || '',
         authorName: user?.displayName || '',
-        authorEmail: user?.email || '',
         title: '',
         description: '',
         tag: '',
@@ -105,7 +102,6 @@ const AddPost = () => {
     setFormData({
       authorImage: user?.photoURL || '',
       authorName: user?.displayName || '',
-      authorEmail: user?.email || '',
       title: '',
       description: '',
       tag: '',
@@ -239,19 +235,7 @@ const AddPost = () => {
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-cyan-500 focus:border-cyan-500"
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Author Email
-                  </label>
-                  <input
-                    type="email"
-                    name="authorEmail"
-                    value={formData.authorEmail}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-cyan-500 focus:border-cyan-500"
-                  />
-                </div>
+
               </div>
             </div>
 

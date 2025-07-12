@@ -29,8 +29,8 @@ const Header = () => {
             </li>
             {
                 user && <>   
-                     <li><NavLink to="/add-post" className={({ isActive }) => isActive ? 'active' : ''}>Add Post</NavLink></li>                 
-                    <li><NavLink to="/my-posts" className={({ isActive }) => isActive ? 'active' : ''}>My Posts</NavLink></li>                   
+                     <li><NavLink to="/dashboard/add-post" className={({ isActive }) => isActive ? 'active' : ''}>Add Post</NavLink></li>                 
+                    <li><NavLink to="/dashboard/my-posts" className={({ isActive }) => isActive ? 'active' : ''}>My Posts</NavLink></li>                   
                 </>
             }
         </>
