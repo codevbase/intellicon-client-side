@@ -5,8 +5,15 @@ import NotFound from "../pages/NotFound";
 import Membership from "../pages/Membership/Membership";
 import Register from "../pages/Auth/Register";
 import Login from "../pages/Auth/Login";
+import PostDetails from "../pages/Post/PostDetails";
 import DashBoard from "../pages/Dashboard/DashBoard";
+import MyProfile from "../pages/Dashboard/MyProfile";
+import AddPost from "../pages/Dashboard/AddPost";
+import MyPosts from "../pages/Dashboard/MyPosts";
+import AdminProfile from "../pages/Dashboard/AdminProfile";
+import ManageUsers from "../pages/Dashboard/ManageUsers";
 import PrivateRoute from "./PrivateRoute";
+import DashboardLayout from "../layout/DashboardLayout";
 
 
 const router = createBrowserRouter([
@@ -32,10 +39,48 @@ const router = createBrowserRouter([
                 Component: Login,
             },
             {
-                path:"dashboard",
-                Component:DashBoard,
-            }
+                path: "post/:postId",
+                Component: PostDetails,
+            },
+            // {
+            //     path:"dashboard",
+            //     Component:DashBoard,
+            // },
+            // {
+            //     path: "dashboardlayout",
+            //     Component: DashboardLayout,
+            // }
 
+        ]
+    },
+    {
+        path: "/dashboard",
+        element:<PrivateRoute><DashboardLayout /></PrivateRoute>,
+        children: [
+            {
+                index: true,
+                Component: DashBoard,
+            },
+            {
+                path: "profile",
+                Component: MyProfile,
+            },
+            {
+                path: "add-post",
+                Component: AddPost,
+            },
+            {
+                path: "my-posts",
+                Component: MyPosts,
+            },
+            {
+                path: "admin-profile",
+                Component: AdminProfile,
+            },
+            {
+                path: "manage-users",
+                Component: ManageUsers,
+            },
         ]
     },
     {
