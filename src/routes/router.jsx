@@ -12,11 +12,19 @@ import AddPost from "../pages/Dashboard/AddPost";
 import MyPosts from "../pages/Dashboard/MyPosts";
 import AdminProfile from "../pages/Dashboard/AdminProfile";
 import ManageUsers from "../pages/Dashboard/ManageUsers";
+import Reports from "../pages/Dashboard/Reports";
+import AdminAnnouncements from "../pages/Dashboard/AdminAnnouncements";
+import AdminDashboard from "../pages/Admin/AdminDashboard";
+import AdminUsers from "../pages/Admin/AdminUsers";
 import PrivateRoute from "./PrivateRoute";
+import AdminRoute from "./AdminRoute";
 import DashboardLayout from "../layout/DashboardLayout";
+import AdminLayout from "../layout/AdminLayout";
 import CommentsPage from "../pages/Post/CommentsPage";
 import ToastTest from "../components/ToastTest";
 import ApiTest from "../components/ApiTest";
+import AdminTest from "../components/AdminTest";
+import AdminSetup from "../components/AdminSetup";
 
 
 const router = createBrowserRouter([
@@ -57,6 +65,14 @@ const router = createBrowserRouter([
                 path: "test-api",
                 Component: ApiTest,
             },
+            {
+                path: "admin-test",
+                Component: AdminTest,
+            },
+            {
+                path: "admin-setup",
+                Component: AdminSetup,
+            },
             
             // {
             //     path:"dashboard",
@@ -91,11 +107,45 @@ const router = createBrowserRouter([
             },
             {
                 path: "admin-profile",
-                Component: AdminProfile,
+                element: <AdminRoute><AdminProfile /></AdminRoute>,
             },
             {
                 path: "manage-users",
-                Component: ManageUsers,
+                element: <AdminRoute><ManageUsers /></AdminRoute>,
+            },
+            {
+                path: "reports",
+                element: <AdminRoute><Reports /></AdminRoute>,
+            },
+            {
+                path: "announcements",
+                element: <AdminRoute><AdminAnnouncements /></AdminRoute>,
+            },
+        ]
+    },
+    {
+        path: "/admin",
+        element: <AdminRoute><AdminLayout /></AdminRoute>,
+        children: [
+            {
+                index: true,
+                Component: AdminDashboard,
+            },
+            {
+                path: "users",
+                Component: AdminUsers,
+            },
+            {
+                path: "announcements",
+                element: <AdminAnnouncements />,
+            },
+            {
+                path: "reports",
+                element: <Reports />,
+            },
+            {
+                path: "profile",
+                element: <AdminProfile />,
             },
         ]
     },

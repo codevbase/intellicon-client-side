@@ -49,10 +49,8 @@ const AuthProvider = ({ children }) => {
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
             currentUser? console.log('Current user from observer:', currentUser): console.log('No user is signed in');
-            setUser(currentUser);
-            setLoading(false);
-
-            // If user is logged in, exchange Firebase ID token for JWT
+            
+            // If user is logged in, exchange Firebase ID token for JWT and fetch user data
             if (currentUser) {
               try {
                 const idToken = await currentUser.getIdToken();
@@ -65,11 +63,56 @@ const AuthProvider = ({ children }) => {
                 }).catch(err => {
                     console.error('Error fetching JWT token:', err);
                 });
-                // Now your JWT httpOnly cookie is set!
+
+                // Fetch user data from backend to get role and other info
+                try {
+                    const userResponse = await axiosSecure.get(`/users/${currentUser.email}`);
+                    const userData = userResponse.data;
+                    
+                    // Merge Firebase user data with backend user data
+                    const enhancedUser = {
+                        ...currentUser,
+                        role: userData.role || 'user',
+                        badge: userData.badge || 'newcomer',
+                        isMember: userData.isMember || false,
+                        permissions: userData.permissions || []
+                    };
+                    
+                    setUser(enhancedUser);
+                } catch (error) {
+                    console.error('Error fetching user data:', error);
+                    // If user doesn't exist in backend, create them
+                    try {
+                        const createResponse = await axiosSecure.post('/users', {
+                            name: currentUser.displayName || '',
+                            email: currentUser.email,
+                            photoURL: currentUser.photoURL || '',
+                            role: 'user'
+                        });
+                        
+                        const enhancedUser = {
+                            ...currentUser,
+                            role: createResponse.data.user.role || 'user',
+                            badge: createResponse.data.user.badge || 'newcomer',
+                            isMember: createResponse.data.user.isMember || false,
+                            permissions: createResponse.data.user.permissions || []
+                        };
+                        
+                        setUser(enhancedUser);
+                    } catch (createError) {
+                        console.error('Error creating user:', createError);
+                        setUser(currentUser);
+                    }
+                }
               } catch (err) {
                 console.error('Error fetching JWT token:', err);
+                setUser(currentUser);
               }
+            } else {
+                setUser(null);
             }
+            
+            setLoading(false);
         });
         return () => unsubscribe();
     }, []);
