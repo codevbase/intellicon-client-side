@@ -1,2 +1,6 @@
 @import "tailwindcss";
 @plugin "daisyui";
+
+/* Toast and SweetAlert styles */
+@import "react-toastify/dist/ReactToastify.css";
+@import "sweetalert2/dist/sweetalert2.min.css";

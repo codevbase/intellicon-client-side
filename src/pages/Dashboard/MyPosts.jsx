@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { FaEdit, FaTrash, FaEye, FaSearch, FaFilter, FaSort, FaSpinner } from 'react-icons/fa';
+import { FaEdit, FaTrash, FaEye, FaSearch, FaFilter, FaSort, FaSpinner, FaComment, FaThumbsUp, FaThumbsDown } from 'react-icons/fa';
 import { usePosts } from '../../hooks/usePosts';
 import useAuth from '../../hooks/useAuth';
+import { useNavigate } from 'react-router';
 
 const MyPosts = () => {
   const { user } = useAuth();
-  const { useGetUserPosts } = usePosts();
+  const { useGetUserPosts, useDeletePost } = usePosts();
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [sortBy, setSortBy] = useState('newest');
@@ -13,6 +15,7 @@ const MyPosts = () => {
 
   // Fetch user's posts with pagination
   const { data: postsData, isLoading, error } = useGetUserPosts(user?.email, currentPage, 10);
+  const deletePostMutation = useDeletePost();
   
   const posts = postsData?.posts || [];
   const pagination = postsData?.pagination || {};
@@ -59,6 +62,38 @@ const MyPosts = () => {
     setCurrentPage(page);
   };
 
+  const handleView = (postId) => {
+    navigate(`/post/${postId}`);
+  };
+
+  const handleEdit = (postId) => {
+    console.log('Edit post:', postId);
+    // Navigate to edit page or open edit modal
+  };
+
+  const handleDelete = async (postId) => {
+    if (window.confirm('Are you sure you want to delete this post? This action cannot be undone.')) {
+      try {
+        await deletePostMutation.mutateAsync(postId);
+        // Success message could be shown here
+      } catch (error) {
+        console.error('Error deleting post:', error);
+        // Error message could be shown here
+      }
+    }
+  };
+
+  const handleComment = (postId) => {
+    navigate(`/comments/${postId}`);
+  };
+
+  // Calculate total votes
+  const getTotalVotes = (post) => {
+    const upVotes = post.upVote || 0;
+    const downVotes = post.downVote || 0;
+    return upVotes - downVotes;
+  };
+
   // Loading state
   if (isLoading) {
     return (
@@ -88,37 +123,6 @@ const MyPosts = () => {
       </div>
     );
   }
-
-  const handleEdit = (postId) => {
-    console.log('Edit post:', postId);
-    // Navigate to edit page or open edit modal
-  };
-
-  const handleDelete = (postId) => {
-    if (window.confirm('Are you sure you want to delete this post?')) {
-      console.log('Delete post:', postId);
-      // Delete post logic
-    }
-  };
-
-  const handleView = (postId) => {
-    console.log('View post:', postId);
-    // Navigate to post view page
-  };
-
-  const getStatusBadge = (status) => {
-    const statusConfig = {
-      published: { color: 'bg-green-100 text-green-800', label: 'Published' },
-      draft: { color: 'bg-yellow-100 text-yellow-800', label: 'Draft' },
-      pending: { color: 'bg-blue-100 text-blue-800', label: 'Pending' }
-    };
-    const config = statusConfig[status] || statusConfig.draft;
-    return (
-      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${config.color}`}>
-        {config.label}
-      </span>
-    );
-  };
 
   return (
     <div className="space-y-6">
@@ -179,64 +183,135 @@ const MyPosts = () => {
         </div>
       </div>
 
-      {/* Posts grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-        {filteredPosts.map(post => (
-          <div key={post._id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-            {/* Post content */}
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-gray-500 capitalize">{post.tag}</span>
-                {getStatusBadge(post.status || 'published')}
-              </div>
-              
-              <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
-                {post.title}
-              </h3>
-              
-              <p className="text-gray-600 text-sm mb-4 line-clamp-3">
-                {post.description}
-              </p>
+      {/* Posts Table */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Post Title
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Category
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Number of Votes
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Views
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Date
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {filteredPosts.map(post => (
+                <tr key={post._id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex items-center">
+                      <div>
+                        <div className="text-sm font-medium text-gray-900 line-clamp-2 max-w-xs">
+                          {post.title}
+                        </div>
+                        <div className="text-sm text-gray-500 line-clamp-1 max-w-xs">
+                          {post.description}
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-cyan-100 text-cyan-800 capitalize">
+                      {post.tag}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex items-center space-x-2">
+                      <div className="flex items-center text-green-600">
+                        <FaThumbsUp className="w-3 h-3 mr-1" />
+                        <span className="text-sm font-medium">{post.upVote || 0}</span>
+                      </div>
+                      <div className="flex items-center text-red-600">
+                        <FaThumbsDown className="w-3 h-3 mr-1" />
+                        <span className="text-sm font-medium">{post.downVote || 0}</span>
+                      </div>
+                      <div className="text-sm text-gray-900 font-medium">
+                        ({getTotalVotes(post)})
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {post.views || 0}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {new Date(post.createdAt).toLocaleDateString()}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <div className="flex items-center space-x-2">
+                      <button
+                        onClick={() => handleView(post._id)}
+                        className="flex items-center px-2 py-1 text-xs text-cyan-600 hover:bg-cyan-50 rounded transition-colors duration-200"
+                        title="View Post"
+                      >
+                        <FaEye className="w-3 h-3 mr-1" />
+                        View
+                      </button>
+                      <button
+                        onClick={() => handleComment(post._id)}
+                        className="flex items-center px-2 py-1 text-xs text-blue-600 hover:bg-blue-50 rounded transition-colors duration-200"
+                        title="View Comments"
+                      >
+                        <FaComment className="w-3 h-3 mr-1" />
+                        Comment
+                      </button>
+                      <button
+                        onClick={() => handleEdit(post._id)}
+                        className="flex items-center px-2 py-1 text-xs text-gray-600 hover:bg-gray-50 rounded transition-colors duration-200"
+                        title="Edit Post"
+                      >
+                        <FaEdit className="w-3 h-3 mr-1" />
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDelete(post._id)}
+                        disabled={deletePostMutation.isPending}
+                        className="flex items-center px-2 py-1 text-xs text-red-600 hover:bg-red-50 rounded transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                        title="Delete Post"
+                      >
+                        {deletePostMutation.isPending ? (
+                          <FaSpinner className="w-3 h-3 mr-1 animate-spin" />
+                        ) : (
+                          <FaTrash className="w-3 h-3 mr-1" />
+                        )}
+                        Delete
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
 
-              {/* Stats */}
-              <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
-                <div className="flex items-center space-x-4">
-                  <span>{post.views || 0} views</span>
-                  <span>{post.upVote || 0} upvotes</span>
-                  <span>{post.downVote || 0} downvotes</span>
-                </div>
-                <span>{new Date(post.createdAt).toLocaleDateString()}</span>
-              </div>
-
-              {/* Actions */}
-              <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                <div className="flex items-center space-x-2">
-                  <button
-                    onClick={() => handleView(post._id)}
-                    className="flex items-center px-3 py-1.5 text-sm text-cyan-600 hover:bg-cyan-50 rounded-md transition-colors duration-200"
-                  >
-                    <FaEye className="w-3 h-3 mr-1" />
-                    View
-                  </button>
-                  <button
-                    onClick={() => handleEdit(post._id)}
-                    className="flex items-center px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-50 rounded-md transition-colors duration-200"
-                  >
-                    <FaEdit className="w-3 h-3 mr-1" />
-                    Edit
-                  </button>
-                </div>
-                <button
-                  onClick={() => handleDelete(post._id)}
-                  className="flex items-center px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 rounded-md transition-colors duration-200"
-                >
-                  <FaTrash className="w-3 h-3 mr-1" />
-                  Delete
-                </button>
-              </div>
+        {/* Empty state */}
+        {filteredPosts.length === 0 && (
+          <div className="text-center py-12">
+            <div className="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+              <FaSearch className="w-8 h-8 text-gray-400" />
             </div>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No posts found</h3>
+            <p className="text-gray-500">
+              {searchTerm || selectedCategory !== 'all' 
+                ? 'Try adjusting your search or filter criteria.'
+                : 'You haven\'t created any posts yet. Start sharing your thoughts!'
+              }
+            </p>
           </div>
-        ))}
+        )}
       </div>
 
       {/* Pagination */}
@@ -265,22 +340,6 @@ const MyPosts = () => {
               Next
             </button>
           </div>
-        </div>
-      )}
-
-      {/* Empty state */}
-      {filteredPosts.length === 0 && (
-        <div className="text-center py-12">
-          <div className="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-            <FaSearch className="w-8 h-8 text-gray-400" />
-          </div>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No posts found</h3>
-          <p className="text-gray-500">
-            {searchTerm || selectedCategory !== 'all' 
-              ? 'Try adjusting your search or filter criteria.'
-              : 'You haven\'t created any posts yet. Start sharing your thoughts!'
-            }
-          </p>
         </div>
       )}
     </div>

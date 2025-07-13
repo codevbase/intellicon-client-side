@@ -9,6 +9,7 @@ import imageCompression from 'browser-image-compression';
 import { FcGoogle } from 'react-icons/fc';
 import Swal from 'sweetalert2';
 import axios from 'axios';
+import { DEFAULT_USER_BADGE, BADGE_DESCRIPTIONS } from '../../constants/roles';
 
 const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
 const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
@@ -83,13 +84,22 @@ const Register = () => {
             } catch (backendError) {
                 if (backendError.response && backendError.response.status === 409) {
                     // User already exists in backend, continue
+                    console.log('User already exists in backend, continuing...');
                 } else {
                     throw new Error('Failed to save user data');
                 }
             }
 
             // Step 6: Success feedback and navigation
-            toast.success('Registration successful!');
+            const badgeDescription = BADGE_DESCRIPTIONS[DEFAULT_USER_BADGE];
+            Swal.fire({
+                position: 'top-end',
+                icon: 'success',
+                title: 'Registration successful!',
+                text: `Welcome! You've been assigned the "${DEFAULT_USER_BADGE}" badge. ${badgeDescription}`,
+                showConfirmButton: false,
+                timer: 3000
+            });
             reset();
             navigate('/dashboard');
         } catch (err) {

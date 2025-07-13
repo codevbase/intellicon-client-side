@@ -3,6 +3,7 @@ import {
   getAllPosts, 
   getPostById, 
   createPost, 
+  deletePost,
   getUserPosts, 
   getUserPostCount, 
   getAllTags, 
@@ -76,12 +77,10 @@ export const usePosts = () => {
 
   // Search posts
   const useSearchPosts = (searchParams) => {
-    const { query = '', tag = '', author = '', sortBy = 'relevance', page = 1, limit = 10 } = searchParams;
-    
     return useQuery({
       queryKey: ['posts', 'search', searchParams],
       queryFn: () => searchPosts(searchParams),
-      enabled: !!(query || tag || author),
+      enabled: !!(searchParams.query || searchParams.tag || searchParams.author),
       staleTime: 2 * 60 * 1000, // 2 minutes
     });
   };
@@ -106,6 +105,26 @@ export const usePosts = () => {
     });
   };
 
+  // Delete post mutation
+  const useDeletePost = () => {
+    return useMutation({
+      mutationFn: deletePost,
+      onSuccess: (data, postId) => {
+        // Invalidate and refetch relevant queries
+        queryClient.invalidateQueries({ queryKey: ['posts', 'all'] });
+        queryClient.invalidateQueries({ queryKey: ['posts', 'user'] });
+        queryClient.invalidateQueries({ queryKey: ['posts', 'count'] });
+        queryClient.invalidateQueries({ queryKey: ['posts', 'recent'] });
+        
+        // Remove the deleted post from cache
+        queryClient.removeQueries({ queryKey: ['posts', 'single', postId] });
+      },
+      onError: (error) => {
+        console.error('Error deleting post:', error);
+      },
+    });
+  };
+
   return {
     useGetAllPosts,
     useGetPostById,
@@ -115,5 +134,6 @@ export const usePosts = () => {
     useGetUserRecentPosts,
     useSearchPosts,
     useCreatePost,
+    useDeletePost,
   };
 };

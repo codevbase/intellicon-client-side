@@ -1,31 +1,19 @@
 import React, { useState } from 'react';
-import { FaSearch, FaFilter, FaSort, FaEye, FaThumbsUp, FaThumbsDown, FaUser, FaClock, FaSpinner } from 'react-icons/fa';
+import { FaSearch, FaFilter, FaSort, FaEye, FaThumbsUp, FaThumbsDown, FaUser, FaClock, FaSpinner, FaTags } from 'react-icons/fa';
 import { usePosts } from '../../hooks/usePosts';
 import { Link } from 'react-router';
+import Announcements from '../../components/Announcements/Announcements';
+import AnnouncementTest from '../../components/AnnouncementTest';
 
 const Home = () => {
-  const { useGetAllPosts, useSearchPosts } = usePosts();
-  const [searchParams, setSearchParams] = useState({
-    query: '',
-    tag: '',
-    author: '',
-    sortBy: 'newest'
-  });
+  const { useGetAllPosts, useSearchPosts, useGetAllTags } = usePosts();
+  const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [isSearching, setIsSearching] = useState(false);
 
-  // Get all posts or search results
-  const searchQuery = useSearchPosts(searchParams);
-  const allPostsQuery = useGetAllPosts(currentPage, 10, searchParams.sortBy);
-  
-  const { data: postsData, isLoading, error } = isSearching ? searchQuery : allPostsQuery;
-
-  const posts = postsData?.posts || [];
-  const pagination = postsData?.pagination || {};
-  const searchInfo = postsData?.searchInfo;
-
-  // Available tags for filter
-  const availableTags = [
+  // Get all tags for search suggestions
+  const { data: tagsData } = useGetAllTags();
+  const availableTags = tagsData || [
     'Technology', 'Programming', 'Web Development', 'React',
     'JavaScript', 'Node.js', 'MongoDB', 'Design', 'UI/UX',
     'Mobile Development', 'Data Science', 'Machine Learning',
@@ -33,26 +21,34 @@ const Home = () => {
     'Tips & Tricks', 'News', 'General'
   ];
 
-  const sortOptions = [
-    { value: 'newest', label: 'Newest First' },
-    { value: 'oldest', label: 'Oldest First' },
-    { value: 'popular', label: 'Most Popular' },
-    { value: 'mostVoted', label: 'Most Voted' }
-  ];
+  // Search parameters - prioritize tag search over general query search
+  const searchParams = {
+    query: '', // Use tag search instead of general query search
+    tag: searchTerm, // Search by tag
+    author: '',
+    sortBy: 'newest'
+  };
+
+  // Get all posts or search results
+  const searchQuery = useSearchPosts(searchParams);
+  const allPostsQuery = useGetAllPosts(currentPage, 10, 'newest');
+  
+  const { data: postsData, isLoading, error } = isSearching ? searchQuery : allPostsQuery;
+
+  const posts = postsData?.posts || [];
+  const pagination = postsData?.pagination || {};
+  const searchInfo = postsData?.searchInfo;
 
   const handleSearch = (e) => {
     e.preventDefault();
-    setIsSearching(true);
-    setCurrentPage(1);
+    if (searchTerm.trim()) {
+      setIsSearching(true);
+      setCurrentPage(1);
+    }
   };
 
   const handleClearSearch = () => {
-    setSearchParams({
-      query: '',
-      tag: '',
-      author: '',
-      sortBy: 'newest'
-    });
+    setSearchTerm('');
     setIsSearching(false);
     setCurrentPage(1);
   };
@@ -61,12 +57,10 @@ const Home = () => {
     setCurrentPage(page);
   };
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setSearchParams(prev => ({
-      ...prev,
-      [name]: value
-    }));
+  const handleTagClick = (tag) => {
+    setSearchTerm(tag);
+    setIsSearching(true);
+    setCurrentPage(1);
   };
 
   const formatDate = (dateString) => {
@@ -86,11 +80,9 @@ const Home = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-center min-h-64">
-            <FaSpinner className="animate-spin h-8 w-8 text-cyan-600" />
-          </div>
+      <div className="min-h-screen bg-gray-50">
+        <div className="flex items-center justify-center min-h-64">
+          <FaSpinner className="animate-spin h-8 w-8 text-cyan-600" />
         </div>
       </div>
     );
@@ -109,111 +101,111 @@ const Home = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            Welcome to Intellicon Forum
-          </h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Discover, share, and discuss the latest in technology, programming, and innovation
-          </p>
-        </div>
+    <div className="min-h-screen bg-gray-50">
+      {/* Banner Section */}
+      <div className="bg-gradient-to-r from-cyan-600 to-blue-600 text-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+          {/* Header */}
+          <div className="text-center mb-12">
+            <h1 className="text-5xl font-bold mb-6">
+              Welcome to Intellicon Forum
+            </h1>
+            <p className="text-xl text-cyan-100 max-w-3xl mx-auto leading-relaxed">
+              Discover, share, and discuss the latest in technology, programming, and innovation. 
+              Connect with developers, designers, and tech enthusiasts from around the world.
+            </p>
+          </div>
 
-        {/* Search and Filters */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
-          <form onSubmit={handleSearch} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              {/* Search Query */}
-              <div className="md:col-span-2">
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <FaSearch className="h-4 w-4 text-gray-400" />
-                  </div>
-                  <input
-                    type="text"
-                    name="query"
-                    value={searchParams.query}
-                    onChange={handleInputChange}
-                    placeholder="Search posts by title or description..."
-                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-cyan-500 focus:border-cyan-500"
-                  />
+          {/* Search Bar */}
+          <div className="max-w-4xl mx-auto">
+            <form onSubmit={handleSearch} className="relative">
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-6 flex items-center pointer-events-none">
+                  <FaSearch className="h-6 w-6 text-gray-400" />
+                </div>
+                <input
+                  type="text"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="Search posts by tag (e.g., React, JavaScript, Web Development)..."
+                  className="block w-full pl-16 pr-32 py-4 text-lg border-0 rounded-full bg-white text-cyan-600 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-300 shadow-lg"
+                />
+                <div className="absolute inset-y-0 right-0 flex items-center pr-2">
+                  <button
+                    type="submit"
+                    className="inline-flex items-center px-6 py-2 bg-cyan-600 text-white font-semibold rounded-full hover:bg-cyan-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-300 transition-colors duration-200"
+                  >
+                    <FaSearch className="w-5 h-5 mr-2" />
+                    Search
+                  </button>
                 </div>
               </div>
+            </form>
 
-              {/* Tag Filter */}
-              <div>
-                <select
-                  name="tag"
-                  value={searchParams.tag}
-                  onChange={handleInputChange}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md leading-5 bg-white focus:outline-none focus:ring-1 focus:ring-cyan-500 focus:border-cyan-500"
-                >
-                  <option value="">All Tags</option>
-                  {availableTags.map(tag => (
-                    <option key={tag} value={tag}>{tag}</option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Sort */}
-              <div>
-                <select
-                  name="sortBy"
-                  value={searchParams.sortBy}
-                  onChange={handleInputChange}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md leading-5 bg-white focus:outline-none focus:ring-1 focus:ring-cyan-500 focus:border-cyan-500"
-                >
-                  {sortOptions.map(option => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
+            {/* Popular Tags */}
+            <div className="mt-8 text-center">
+              <p className="text-cyan-100 mb-4 text-lg">Popular tags:</p>
+              <div className="flex flex-wrap justify-center gap-2">
+                {availableTags.slice(0, 8).map(tag => (
+                  <button
+                    key={tag}
+                    onClick={() => handleTagClick(tag)}
+                    className="inline-flex items-center px-4 py-2 bg-white bg-opacity-20 text-cyan-600 rounded-full hover:bg-opacity-30 transition-all duration-200 text-sm font-medium"
+                  >
+                    <FaTags className="w-3 h-3 mr-1" />
+                    {tag}
+                  </button>
+                ))}
               </div>
             </div>
+          </div>
+        </div>
+      </div>
 
-            {/* Search Actions */}
-            <div className="flex items-center justify-between">
+      {/* Announcements Section */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <Announcements />
+        <div className="mt-4">
+          <AnnouncementTest />
+        </div>
+      </div>
+
+      {/* Search Results Section */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* Search Status */}
+        {isSearching && (
+          <div className="mb-8">
+            <div className="flex items-center justify-between bg-white rounded-lg shadow-sm border border-gray-200 p-4">
               <div className="flex items-center space-x-4">
-                <button
-                  type="submit"
-                  className="inline-flex items-center px-4 py-2 bg-cyan-600 text-white font-medium rounded-md hover:bg-cyan-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500"
-                >
-                  <FaSearch className="w-4 h-4 mr-2" />
-                  Search
-                </button>
-                {isSearching && (
-                  <button
-                    type="button"
-                    onClick={handleClearSearch}
-                    className="inline-flex items-center px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500"
-                  >
-                    Clear Search
-                  </button>
+                <div className="flex items-center text-cyan-600">
+                  <FaSearch className="w-5 h-5 mr-2" />
+                  <span className="font-medium">Search Results</span>
+                </div>
+                {searchInfo && (
+                  <span className="text-gray-600">
+                    Found {searchInfo.resultsFound} results for "{searchTerm}"
+                  </span>
                 )}
               </div>
-
-              {/* Search Info */}
-              {searchInfo && (
-                <div className="text-sm text-gray-600">
-                  Found {searchInfo.resultsFound} results
-                  {searchInfo.query && ` for "${searchInfo.query}"`}
-                </div>
-              )}
+              <button
+                onClick={handleClearSearch}
+                className="inline-flex items-center px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 transition-colors duration-200"
+              >
+                Clear Search
+              </button>
             </div>
-          </form>
-        </div>
+          </div>
+        )}
 
         {/* Posts Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
           {posts.map(post => (
-            <div key={post._id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow duration-200">
-              <div className="p-6">
+            <div key={post._id} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
+              <div className="p-8">
                 {/* Post Header */}
-                <div className="flex items-center justify-between mb-3">
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-cyan-100 text-cyan-800">
+                <div className="flex items-center justify-between mb-4">
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-cyan-100 text-cyan-800">
+                    <FaTags className="w-3 h-3 mr-1" />
                     {post.tag}
                   </span>
                   <div className="flex items-center text-sm text-gray-500">
@@ -224,37 +216,37 @@ const Home = () => {
 
                 {/* Post Title */}
                 <Link to={`/post/${post._id}`} className="block">
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2 hover:text-cyan-600 transition-colors duration-200 line-clamp-2">
+                  <h3 className="text-2xl font-bold text-gray-900 mb-3 hover:text-cyan-600 transition-colors duration-200 line-clamp-2">
                     {post.title}
                   </h3>
                 </Link>
 
                 {/* Post Description */}
-                <p className="text-gray-600 mb-4 line-clamp-3">
+                <p className="text-gray-600 mb-6 line-clamp-3 text-lg leading-relaxed">
                   {post.description}
                 </p>
 
                 {/* Post Stats */}
-                <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
-                  <div className="flex items-center space-x-4">
+                <div className="flex items-center justify-between text-sm text-gray-500 mb-6">
+                  <div className="flex items-center space-x-6">
                     <span className="flex items-center">
-                      <FaEye className="w-3 h-3 mr-1" />
-                      {post.views || 0}
+                      <FaEye className="w-4 h-4 mr-2" />
+                      {post.views || 0} views
                     </span>
                     <span className="flex items-center text-green-600">
-                      <FaThumbsUp className="w-3 h-3 mr-1" />
+                      <FaThumbsUp className="w-4 h-4 mr-2" />
                       {post.upVote || 0}
                     </span>
                     <span className="flex items-center text-red-600">
-                      <FaThumbsDown className="w-3 h-3 mr-1" />
+                      <FaThumbsDown className="w-4 h-4 mr-2" />
                       {post.downVote || 0}
                     </span>
-                    <span className={`font-medium ${getVoteDifference(post) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    <span className={`font-semibold ${getVoteDifference(post) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                       {getVoteDifference(post) >= 0 ? '+' : ''}{getVoteDifference(post)} votes
                     </span>
                   </div>
                   <div className="flex items-center text-gray-500">
-                    <FaUser className="w-3 h-3 mr-1" />
+                    <FaUser className="w-4 h-4 mr-2" />
                     {post.authorEmail}
                   </div>
                 </div>
@@ -262,9 +254,9 @@ const Home = () => {
                 {/* View Post Button */}
                 <Link
                   to={`/post/${post._id}`}
-                  className="inline-flex items-center px-4 py-2 border border-cyan-300 text-cyan-700 font-medium rounded-md hover:bg-cyan-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 transition-colors duration-200"
+                  className="inline-flex items-center px-6 py-3 border-2 border-cyan-600 text-cyan-600 font-semibold rounded-lg hover:bg-cyan-600 hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 transition-all duration-200"
                 >
-                  <FaEye className="w-4 h-4 mr-2" />
+                  <FaEye className="w-5 h-5 mr-2" />
                   Read More
                 </Link>
               </div>
@@ -274,26 +266,26 @@ const Home = () => {
 
         {/* Pagination */}
         {pagination.totalPages > 1 && (
-          <div className="flex items-center justify-between bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+          <div className="flex items-center justify-between bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <div className="text-sm text-gray-700">
               Showing page {pagination.currentPage} of {pagination.totalPages} 
               ({pagination.totalPosts} total posts)
             </div>
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-3">
               <button
                 onClick={() => handlePageChange(pagination.currentPage - 1)}
                 disabled={!pagination.hasPrevPage}
-                className="px-3 py-1 text-sm border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                className="px-4 py-2 text-sm border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors duration-200"
               >
                 Previous
               </button>
-              <span className="px-3 py-1 text-sm text-gray-700">
+              <span className="px-4 py-2 text-sm text-gray-700 bg-gray-50 rounded-md">
                 {pagination.currentPage}
               </span>
               <button
                 onClick={() => handlePageChange(pagination.currentPage + 1)}
                 disabled={!pagination.hasNextPage}
-                className="px-3 py-1 text-sm border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                className="px-4 py-2 text-sm border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors duration-200"
               >
                 Next
               </button>
@@ -303,17 +295,25 @@ const Home = () => {
 
         {/* Empty State */}
         {posts.length === 0 && (
-          <div className="text-center py-12">
-            <div className="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-              <FaSearch className="w-8 h-8 text-gray-400" />
+          <div className="text-center py-16">
+            <div className="mx-auto w-32 h-32 bg-gray-100 rounded-full flex items-center justify-center mb-6">
+              <FaSearch className="w-12 h-12 text-gray-400" />
             </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No posts found</h3>
-            <p className="text-gray-500">
+            <h3 className="text-2xl font-bold text-gray-900 mb-4">No posts found</h3>
+            <p className="text-gray-600 text-lg max-w-md mx-auto">
               {isSearching 
-                ? 'Try adjusting your search criteria or browse all posts.'
-                : 'No posts available at the moment. Be the first to share something!'
+                ? `No posts found for "${searchTerm}". Try searching for a different tag or browse all posts.`
+                : 'No posts available at the moment. Be the first to share something amazing!'
               }
             </p>
+            {isSearching && (
+              <button
+                onClick={handleClearSearch}
+                className="mt-6 inline-flex items-center px-6 py-3 bg-cyan-600 text-white font-semibold rounded-lg hover:bg-cyan-700 transition-colors duration-200"
+              >
+                Browse All Posts
+              </button>
+            )}
           </div>
         )}
       </div>

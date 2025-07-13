@@ -14,6 +14,9 @@ import AdminProfile from "../pages/Dashboard/AdminProfile";
 import ManageUsers from "../pages/Dashboard/ManageUsers";
 import PrivateRoute from "./PrivateRoute";
 import DashboardLayout from "../layout/DashboardLayout";
+import CommentsPage from "../pages/Post/CommentsPage";
+import ToastTest from "../components/ToastTest";
+import ApiTest from "../components/ApiTest";
 
 
 const router = createBrowserRouter([
@@ -42,6 +45,19 @@ const router = createBrowserRouter([
                 path: "post/:postId",
                 Component: PostDetails,
             },
+            {
+                path: "comments/:postId",
+                Component: CommentsPage,
+            },
+            {
+                path: "test-toast",
+                Component: ToastTest,
+            },
+            {
+                path: "test-api",
+                Component: ApiTest,
+            },
+            
             // {
             //     path:"dashboard",
             //     Component:DashBoard,
