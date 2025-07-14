@@ -1,12 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axiosSecure from '../api/axiosSecure';
 
-// Get all users
-export const useGetAllUsers = () => {
+// Get all users with optional search
+export const useGetAllUsers = (search = '') => {
   return useQuery({
-    queryKey: ['users'],
+    queryKey: ['users', search],
     queryFn: async () => {
-      const response = await axiosSecure.get('/users');
+      const response = await axiosSecure.get(`/users${search ? `?search=${encodeURIComponent(search)}` : ''}`);
       return response.data;
     },
     staleTime: 5 * 60 * 1000, // 5 minutes

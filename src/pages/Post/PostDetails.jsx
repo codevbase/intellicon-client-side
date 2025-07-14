@@ -1,14 +1,89 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams, Link } from 'react-router';
-import { FaUser, FaClock, FaEye, FaThumbsUp, FaThumbsDown, FaTag, FaArrowLeft, FaSpinner } from 'react-icons/fa';
+import { FaUser, FaClock, FaEye, FaThumbsUp, FaThumbsDown, FaTag, FaArrowLeft, FaSpinner, FaComment, FaPaperPlane } from 'react-icons/fa';
 import { usePosts } from '../../hooks/usePosts';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { upvotePost, downvotePost, addComment } from '../../api/posts.api';
+import { toast } from 'react-toastify';
+import useAuth from '../../hooks/useAuth';
 
 const PostDetails = () => {
   const { postId } = useParams();
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
   const { useGetPostById } = usePosts();
 
   // Fetch post details with author info and related posts
   const { data: post, isLoading, error } = useGetPostById(postId);
+
+  // Vote mutations
+  const upvoteMutation = useMutation({
+    mutationFn: () => upvotePost(postId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['post', postId] });
+      queryClient.invalidateQueries({ queryKey: ['posts'] });
+      toast.success('Post upvoted successfully!');
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.error || 'Failed to upvote post');
+    },
+  });
+
+  const downvoteMutation = useMutation({
+    mutationFn: () => downvotePost(postId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['post', postId] });
+      queryClient.invalidateQueries({ queryKey: ['posts'] });
+      toast.success('Post downvoted successfully!');
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.error || 'Failed to downvote post');
+    },
+  });
+
+  const handleUpvote = () => {
+    if (!user) {
+      toast.error('Please login to vote');
+      return;
+    }
+    upvoteMutation.mutate();
+  };
+
+  const handleDownvote = () => {
+    if (!user) {
+      toast.error('Please login to vote');
+      return;
+    }
+    downvoteMutation.mutate();
+  };
+
+  // Comment state and mutation
+  const [commentText, setCommentText] = useState('');
+
+  const addCommentMutation = useMutation({
+    mutationFn: (text) => addComment(postId, { text }),
+    onSuccess: () => {
+      setCommentText('');
+      queryClient.invalidateQueries({ queryKey: ['comments', postId] });
+      toast.success('Comment added successfully!');
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.error || 'Failed to add comment');
+    },
+  });
+
+  const handleAddComment = (e) => {
+    e.preventDefault();
+    if (!user) {
+      toast.error('Please login to comment');
+      return;
+    }
+    if (!commentText.trim()) {
+      toast.error('Please enter a comment');
+      return;
+    }
+    addCommentMutation.mutate(commentText.trim());
+  };
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -221,6 +296,56 @@ const PostDetails = () => {
           </div>
         )}
 
+        {/* Comment Form */}
+        <div className="mt-8 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Add a Comment</h3>
+          {user ? (
+            <form onSubmit={handleAddComment} className="space-y-4">
+              <div>
+                <textarea
+                  value={commentText}
+                  onChange={(e) => setCommentText(e.target.value)}
+                  placeholder="Share your thoughts on this post..."
+                  rows={4}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 resize-vertical"
+                  disabled={addCommentMutation.isPending}
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <button
+                  type="submit"
+                  disabled={addCommentMutation.isPending || !commentText.trim()}
+                  className={`inline-flex items-center px-6 py-2 border border-transparent text-sm font-medium rounded-md transition-colors ${
+                    addCommentMutation.isPending || !commentText.trim()
+                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      : 'bg-cyan-600 text-white hover:bg-cyan-700'
+                  }`}
+                >
+                  <FaPaperPlane className="w-4 h-4 mr-2" />
+                  {addCommentMutation.isPending ? 'Posting...' : 'Post Comment'}
+                </button>
+                <Link
+                  to={`/comments/${postId}`}
+                  className="inline-flex items-center px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-md hover:bg-gray-50"
+                >
+                  <FaComment className="w-4 h-4 mr-2" />
+                  View All Comments
+                </Link>
+              </div>
+            </form>
+          ) : (
+            <div className="text-center py-8">
+              <p className="text-gray-600 mb-4">Please login to add a comment</p>
+              <Link
+                to="/login"
+                className="inline-flex items-center px-4 py-2 bg-cyan-600 text-white font-medium rounded-md hover:bg-cyan-700"
+              >
+                Login to Comment
+              </Link>
+            </div>
+          )}
+        </div>
+
         {/* Action Buttons */}
         <div className="mt-8 flex items-center justify-between">
           <Link
@@ -232,13 +357,29 @@ const PostDetails = () => {
           </Link>
           
           <div className="flex items-center space-x-4">
-            <button className="inline-flex items-center px-4 py-2 border border-green-300 text-green-700 font-medium rounded-md hover:bg-green-50">
+            <button 
+              onClick={handleUpvote}
+              disabled={upvoteMutation.isPending || downvoteMutation.isPending}
+              className={`inline-flex items-center px-4 py-2 border font-medium rounded-md transition-colors ${
+                upvoteMutation.isPending || downvoteMutation.isPending
+                  ? 'border-gray-300 text-gray-400 cursor-not-allowed'
+                  : 'border-green-300 text-green-700 hover:bg-green-50'
+              }`}
+            >
               <FaThumbsUp className="w-4 h-4 mr-2" />
-              Upvote
+              {upvoteMutation.isPending ? 'Voting...' : 'Upvote'}
             </button>
-            <button className="inline-flex items-center px-4 py-2 border border-red-300 text-red-700 font-medium rounded-md hover:bg-red-50">
+            <button 
+              onClick={handleDownvote}
+              disabled={upvoteMutation.isPending || downvoteMutation.isPending}
+              className={`inline-flex items-center px-4 py-2 border font-medium rounded-md transition-colors ${
+                upvoteMutation.isPending || downvoteMutation.isPending
+                  ? 'border-gray-300 text-gray-400 cursor-not-allowed'
+                  : 'border-red-300 text-red-700 hover:bg-red-50'
+              }`}
+            >
               <FaThumbsDown className="w-4 h-4 mr-2" />
-              Downvote
+              {downvoteMutation.isPending ? 'Voting...' : 'Downvote'}
             </button>
           </div>
         </div>

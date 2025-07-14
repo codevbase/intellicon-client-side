@@ -55,7 +55,8 @@ const AdminLayout = () => {
     {
       title: 'Content Management',
       items: [
-        { path: '/admin/announcements', icon: FaBullhorn, label: 'Announcements' },
+        { path: '/admin/make-announcement', icon: FaBullhorn, label: 'Create Announcement' },
+        { path: '/admin/announcements', icon: FaClipboardList, label: 'Manage Announcements' },
         { path: '/admin/posts', icon: FaClipboardList, label: 'Manage Posts' },
         { path: '/admin/comments', icon: FaFlag, label: 'Moderate Comments' },
       ]

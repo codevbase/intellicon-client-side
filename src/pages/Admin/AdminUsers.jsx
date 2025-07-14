@@ -10,8 +10,8 @@ const AdminUsers = () => {
   const [showCreateAdmin, setShowCreateAdmin] = useState(false);
   const [newAdminEmail, setNewAdminEmail] = useState('');
 
-  // Fetch real user data from backend
-  const { data: users = [], isLoading, isError, error } = useGetAllUsers();
+  // Fetch real user data from backend with search
+  const { data: users = [], isLoading, isError, error } = useGetAllUsers(searchTerm);
   
   // Mutations for user management
   const updateRoleMutation = useUpdateUserRole();
@@ -39,9 +39,8 @@ const AdminUsers = () => {
     );
   }
 
+  // Filter by status and role (search is now handled server-side)
   const filteredUsers = users.filter(user => 
-    ((user.name || user.displayName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-     user.email.toLowerCase().includes(searchTerm.toLowerCase())) &&
     (statusFilter === 'all' || user.status === statusFilter) &&
     (roleFilter === 'all' || user.role === roleFilter)
   );
@@ -276,6 +275,9 @@ const AdminUsers = () => {
                   Badge
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Membership
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Posts
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -315,6 +317,17 @@ const AdminUsers = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     {getBadgeDisplay(user.badge)}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {user.isMember ? (
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        Member
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                        Free
+                      </span>
+                    )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {user.postCount || 0}

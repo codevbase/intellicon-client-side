@@ -16,6 +16,7 @@ import Reports from "../pages/Dashboard/Reports";
 import AdminAnnouncements from "../pages/Dashboard/AdminAnnouncements";
 import AdminDashboard from "../pages/Admin/AdminDashboard";
 import AdminUsers from "../pages/Admin/AdminUsers";
+import MakeAnnouncement from "../pages/Admin/MakeAnnouncement";
 import PrivateRoute from "./PrivateRoute";
 import AdminRoute from "./AdminRoute";
 import DashboardLayout from "../layout/DashboardLayout";
@@ -134,6 +135,10 @@ const router = createBrowserRouter([
             {
                 path: "users",
                 Component: AdminUsers,
+            },
+            {
+                path: "make-announcement",
+                Component: MakeAnnouncement,
             },
             {
                 path: "announcements",
