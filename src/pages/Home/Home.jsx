@@ -30,7 +30,7 @@ const Home = () => {
 
   // Get all posts or search results
   const searchQuery = useSearchPosts(searchParams);
-  const allPostsQuery = useGetAllPosts(currentPage, 10, 'newest');
+  const allPostsQuery = useGetAllPosts(currentPage, 5, 'newest');
   
   const { data: postsData, isLoading, error } = isSearching ? searchQuery : allPostsQuery;
 
@@ -241,9 +241,12 @@ const Home = () => {
                       {getVoteDifference(post) >= 0 ? '+' : ''}{getVoteDifference(post)} votes
                     </span>
                   </div>
-                  <div className="flex items-center text-gray-500">
-                    <FaUser className="w-4 h-4 mr-2" />
-                    {post.authorEmail}
+                  
+                  <div className="flex items-center">
+                    {/* <FaUser className="w-4 h-4 mr-2" /> */}
+                    {/* {post.authorImage} */}
+                    <img src={post.authorImage} alt=""  className='w-5 h-5 rounded-full'/>                    
+                    {post.authorName||post.author}
                   </div>
                 </div>
 
