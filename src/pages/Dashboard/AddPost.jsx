@@ -7,12 +7,14 @@ import { usePosts } from '../../hooks/usePosts';
 
 const AddPost = () => {
   const { user } = useAuth();
+  console.log('AddPost user email:', user?.email);
   const { useGetUserPostCount, useGetAllTags, useCreatePost } = usePosts();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [formData, setFormData] = useState({
     authorImage: user?.photoURL || '',
     authorName: user?.displayName || '',
+    authorEmail: user?.email || '',    
     title: '',
     description: '',
     tag: '',
@@ -74,7 +76,8 @@ const AddPost = () => {
         description: formData.description,
         tag: formData.tag,
         authorName: formData.authorName,
-        authorImage: formData.authorImage
+        authorImage: formData.authorImage,
+        authorEmail: formData.authorEmail,
       };
 
       await createPostMutation.mutateAsync(postData);

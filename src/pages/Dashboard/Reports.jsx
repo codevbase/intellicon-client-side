@@ -1,65 +1,89 @@
 import React, { useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import axiosInstance from '../../api/axiosInstance';
 import { FaFlag, FaEye, FaTrash, FaCheck, FaTimes, FaExclamationTriangle, FaComment, FaUser, FaSearch, FaFilter } from 'react-icons/fa';
+
 
 const Reports = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('pending');
+  const queryClient = useQueryClient();
 
-  // Mock reported content data
-  const [reports] = useState([
-    {
-      id: 1,
-      type: 'comment',
-      content: 'This is an inappropriate comment that violates community guidelines.',
-      author: 'john.doe@example.com',
-      reporter: 'jane.smith@example.com',
-      reason: 'Inappropriate content',
-      status: 'pending',
-      reportedAt: '2024-01-20T10:30:00Z',
-      postId: 'post123',
-      commentId: 'comment456'
+  const res =  axiosInstance.get('/posts/reported-comments');
+console.log('Raw API response:', res.data);
+
+  // Fetch reported comments (and potentially posts/users) from backend
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ['reported-comments'],
+    queryFn: async () => {
+      // Get reported comments
+      const res = await axiosInstance.get('/posts/reported-comments');
+      
+      // Map backend data to a unified report structure
+      // Only include comments with at least one report and valid postId
+      return (res.data?.reportedComments || [])
+        .filter(comment =>
+          Array.isArray(comment.reports) && comment.reports.length > 0 &&
+          typeof comment.postId === 'string' && /^[a-fA-F0-9]{24}$/.test(comment.postId)
+        )
+        .map(comment => ({
+          id: comment._id,
+          type: 'comment',
+          content: comment.text,
+          author: comment.email,
+          reporter: comment.reports[0]?.reporterEmail || '',
+          reason: comment.reports[0]?.feedback || '',
+          status: comment.status || 'pending',
+          reportedAt: comment.reports[0]?.reportedAt || comment.createdAt,
+          postId: comment.postId,
+          commentId: comment._id
+        }));
     },
-    {
-      id: 2,
-      type: 'post',
-      content: 'This post contains misleading information about technology.',
-      author: 'mike.wilson@example.com',
-      reporter: 'admin@intellicon.com',
-      reason: 'Misleading information',
-      status: 'reviewed',
-      reportedAt: '2024-01-19T15:45:00Z',
-      postId: 'post789'
-    },
-    {
-      id: 3,
-      type: 'user',
-      content: 'User has been spamming the forum with irrelevant posts.',
-      author: 'spam.user@example.com',
-      reporter: 'moderator@intellicon.com',
-      reason: 'Spam behavior',
-      status: 'pending',
-      reportedAt: '2024-01-18T09:15:00Z'
-    }
-  ]);
+  });
+
+  const reports = data || [];
 
   const filteredReports = reports.filter(report => 
-    (report.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
-     report.author.toLowerCase().includes(searchTerm.toLowerCase()) ||
-     report.reporter.toLowerCase().includes(searchTerm.toLowerCase())) &&
+    (report.content?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+     report.author?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+     report.reporter?.toLowerCase().includes(searchTerm.toLowerCase())) &&
     (typeFilter === 'all' || report.type === typeFilter) &&
     (statusFilter === 'all' || report.status === statusFilter)
   );
 
-  const handleStatusChange = (reportId, newStatus) => {
-    console.log(`Change report ${reportId} status to ${newStatus}`);
-    // Update report status logic
+  const isValidObjectId = (id) => /^[a-f\d]{24}$/i.test(id);
+  const handleStatusChange = async (reportId, newStatus) => {
+    if (!isValidObjectId(reportId)) {
+      alert('Invalid comment ID format.');
+      return;
+    }
+    let action;
+    if (newStatus === 'resolved') action = 'approve';
+    else if (newStatus === 'dismissed') action = 'warn';
+    else return;
+    try {
+      await axiosInstance.patch(`/posts/reported-comments/${reportId}`, { action });
+      queryClient.invalidateQueries(['reported-comments']);
+    } catch (err) {
+      alert('Failed to update report status.');
+      console.error(err);
+    }
   };
 
-  const handleDeleteContent = (reportId) => {
+  const handleDeleteContent = async (reportId) => {
+    if (!isValidObjectId(reportId)) {
+      alert('Invalid comment ID format.');
+      return;
+    }
     if (window.confirm('Are you sure you want to delete this content? This action cannot be undone.')) {
-      console.log('Delete content for report:', reportId);
-      // Delete content logic
+      try {
+        await axiosInstance.patch(`/posts/reported-comments/${reportId}`, { action: 'delete' });
+        queryClient.invalidateQueries(['reported-comments']);
+      } catch (err) {
+        alert('Failed to delete comment.');
+        console.error(err);
+      }
     }
   };
 
@@ -137,6 +161,13 @@ const Reports = () => {
       minute: '2-digit'
     });
   };
+
+  if (isLoading) {
+    return <div className="text-center py-12">Loading reports...</div>;
+  }
+  if (isError) {
+    return <div className="text-center py-12 text-red-500">Error loading reports.</div>;
+  }
 
   return (
     <div className="space-y-6">
@@ -364,4 +395,4 @@ const Reports = () => {
   );
 };
 
-export default Reports; 
+export default Reports;

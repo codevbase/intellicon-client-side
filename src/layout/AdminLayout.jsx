@@ -64,7 +64,7 @@ const AdminLayout = () => {
     {
       title: 'System',
       items: [
-        { path: '/admin/reports', icon: FaExclamationTriangle, label: 'Reports' },
+        { path: '/admin/posts/reported-comments', icon: FaExclamationTriangle, label: 'Reports' },
         { path: '/admin/settings', icon: FaCog, label: 'System Settings' },
         { path: '/admin/logs', icon: FaServer, label: 'System Logs' },
       ]

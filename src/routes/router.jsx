@@ -26,6 +26,8 @@ import ToastTest from "../components/ToastTest";
 import ApiTest from "../components/ApiTest";
 import AdminTest from "../components/AdminTest";
 import AdminSetup from "../components/AdminSetup";
+import Notification from "../pages/Dashboard/Notification";
+
 
 
 const router = createBrowserRouter([
@@ -57,6 +59,11 @@ const router = createBrowserRouter([
             {
                 path: "comments/:postId",
                 Component: CommentsPage,
+            },
+            {
+                path: "notification",
+                Component: Notification,
+
             },
             {
                 path: "test-toast",
@@ -114,10 +121,10 @@ const router = createBrowserRouter([
                 path: "manage-users",
                 element: <AdminRoute><ManageUsers /></AdminRoute>,
             },
-            {
-                path: "reports",
-                element: <AdminRoute><Reports /></AdminRoute>,
-            },
+            // {
+            //     path: "reports",
+            //     element: <AdminRoute><Reports /></AdminRoute>,
+            // },
             {
                 path: "announcements",
                 element: <AdminRoute><AdminAnnouncements /></AdminRoute>,
@@ -145,13 +152,14 @@ const router = createBrowserRouter([
                 element: <AdminAnnouncements />,
             },
             {
-                path: "reports",
+                path: "posts/reported-comments",
                 element: <Reports />,
             },
             {
                 path: "profile",
                 element: <AdminProfile />,
             },
+            
         ]
     },
     {

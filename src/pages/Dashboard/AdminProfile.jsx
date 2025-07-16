@@ -1,11 +1,41 @@
 import React, { useState } from 'react';
+import { useGetTags, useAddTag, useRemoveTag } from '../../hooks/useTags';
 import { FaCrown, FaUsers, FaBullhorn, FaFlag, FaChartBar, FaCog, FaEdit, FaSave, FaTimes, FaSpinner, FaEye, FaUserShield, FaDatabase, FaServer } from 'react-icons/fa';
 import useAuth from '../../hooks/useAuth';
 import { useAnnouncements } from '../../hooks/useAnnouncements';
+import { useGetTotalUserCount } from '../../hooks/useUsers';
+import { useGetTotalPostCount } from '../../hooks/usePosts';
+import { useGetTotalCommentCount } from '../../hooks/useComments';
+
+import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 const AdminProfile = () => {
     const { user } = useAuth();
     const { useGetAnnouncementCount } = useAnnouncements();
+    const { data: userCountData } = useGetTotalUserCount();
+    const { data: postCountData } = useGetTotalPostCount();
+    const { data: commentCountData } = useGetTotalCommentCount();
+
+    // Real data for admin statistics
+    const adminStats = {
+        totalUsers: userCountData?.totalUsers ?? '...',
+        totalPosts: postCountData?.totalPosts ?? '...',
+        totalComments: commentCountData?.totalComments ?? '...',
+        // The following are still mock/hardcoded, update as needed
+        activeUsers: 890,
+        reportedContent: 23,
+        pendingApprovals: 5,
+        systemUptime: '99.9%',
+        lastBackup: '2 hours ago'
+    };
+
+    // Pie chart data for site stats
+    const pieData = [
+        { name: 'Users', value: Number(adminStats.totalUsers) || 0 },
+        { name: 'Posts', value: Number(adminStats.totalPosts) || 0 },
+        { name: 'Comments', value: Number(adminStats.totalComments) || 0 },
+    ];
+    const COLORS = ['#8884d8', '#82ca9d', '#ffc658'];
     const [isEditing, setIsEditing] = useState(false);
     const [formData, setFormData] = useState({
         displayName: user?.displayName || '',
@@ -18,17 +48,7 @@ const AdminProfile = () => {
     const { data: countData } = useGetAnnouncementCount();
     const announcementCount = countData?.count || 0;
 
-    // Mock data for admin statistics
-    const adminStats = {
-        totalUsers: 1250,
-        activeUsers: 890,
-        totalPosts: 3450,
-        totalComments: 12800,
-        reportedContent: 23,
-        pendingApprovals: 5,
-        systemUptime: '99.9%',
-        lastBackup: '2 hours ago'
-    };
+    // ...removed duplicate adminStats declaration...
 
     const permissions = [
         { id: 'manage_users', label: 'Manage Users', description: 'Add, edit, delete user accounts' },
@@ -165,6 +185,30 @@ const AdminProfile = () => {
                             <FaChartBar className="w-5 h-5 mr-2 text-purple-600" />
                             System Overview
                         </h3>
+
+                        {/* Pie Chart for Users, Posts, Comments */}
+                        <div className="w-full flex justify-center mb-8">
+                            <ResponsiveContainer width="100%" height={250} minWidth={250} minHeight={250}>
+                                <PieChart>
+                                    <Pie
+                                        data={pieData}
+                                        dataKey="value"
+                                        nameKey="name"
+                                        cx="50%"
+                                        cy="50%"
+                                        outerRadius={80}
+                                        fill="#8884d8"
+                                        label
+                                    >
+                                        {pieData.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                        ))}
+                                    </Pie>
+                                    <Tooltip />
+                                    <Legend />
+                                </PieChart>
+                            </ResponsiveContainer>
+                        </div>
                         
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                             <div className="bg-blue-50 rounded-lg p-4">
@@ -291,6 +335,101 @@ const AdminProfile = () => {
                     </button>
                 </div>
             </div>
+        {/* Tag Management Form */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mt-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <FaDatabase className="w-5 h-5 mr-2 text-purple-600" />
+                Tag Management
+            </h3>
+            <TagManagement />
+        </div>
+    </div>
+    );
+};
+
+
+// Tag Management Component (connected to backend)
+const TagManagement = () => {
+    const { data: tags = [], isLoading, isError } = useGetTags();
+    const addTagMutation = useAddTag();
+    const removeTagMutation = useRemoveTag();
+    const [newTag, setNewTag] = useState("");
+    const [error, setError] = useState("");
+
+    const handleAddTag = async (e) => {
+        e.preventDefault();
+        const trimmed = newTag.trim();
+        if (!trimmed) {
+            setError("Tag cannot be empty");
+            return;
+        }
+        if (tags.includes(trimmed)) {
+            setError("Tag already exists");
+            return;
+        }
+        try {
+            await addTagMutation.mutateAsync(trimmed);
+            setNewTag("");
+            setError("");
+        } catch (err) {
+            setError(err?.response?.data?.error || "Failed to add tag");
+        }
+    };
+
+    const handleRemoveTag = async (tag) => {
+        try {
+            await removeTagMutation.mutateAsync(tag);
+        } catch (err) {
+            setError(err?.response?.data?.error || "Failed to remove tag");
+        }
+    };
+
+    return (
+        <div>
+            <form onSubmit={handleAddTag} className="flex items-center space-x-2 mb-4">
+                <input
+                    type="text"
+                    value={newTag}
+                    onChange={e => setNewTag(e.target.value)}
+                    placeholder="Add new tag"
+                    className="flex-1 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    disabled={addTagMutation.isLoading}
+                />
+                <button
+                    type="submit"
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+                    disabled={addTagMutation.isLoading}
+                >
+                    {addTagMutation.isLoading ? 'Adding...' : 'Add Tag'}
+                </button>
+            </form>
+            {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
+            {isLoading ? (
+                <span className="text-gray-500">Loading tags...</span>
+            ) : isError ? (
+                <span className="text-red-500">Failed to load tags</span>
+            ) : (
+                <div className="flex flex-wrap gap-2">
+                    {tags.length === 0 ? (
+                        <span className="text-gray-500">No tags added yet.</span>
+                    ) : (
+                        tags.map(tag => (
+                            <span key={tag} className="inline-flex items-center px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm font-medium">
+                                {tag}
+                                <button
+                                    type="button"
+                                    onClick={() => handleRemoveTag(tag)}
+                                    className="ml-2 text-purple-500 hover:text-purple-700 focus:outline-none"
+                                    title="Remove tag"
+                                    disabled={removeTagMutation.isLoading}
+                                >
+                                    <FaTimes className="w-3 h-3" />
+                                </button>
+                            </span>
+                        ))
+                    )}
+                </div>
+            )}
         </div>
     );
 };

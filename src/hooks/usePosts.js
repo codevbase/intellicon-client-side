@@ -1,4 +1,13 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { getTotalPostCount } from '../api/posts.api';
+// Get total post count (for admin dashboard)
+export const useGetTotalPostCount = () => {
+  return useQuery({
+    queryKey: ['posts', 'totalCount'],
+    queryFn: getTotalPostCount,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+};
 import { 
   getAllPosts, 
   getPostById, 
@@ -101,12 +110,16 @@ export const usePosts = () => {
     return useMutation({
       mutationFn: createPost,
       onSuccess: (data) => {
-        // Invalidate and refetch relevant queries
+        // Invalidate and refetch all user post queries (all paginated pages)
+        queryClient.invalidateQueries({
+          predicate: (query) =>
+            Array.isArray(query.queryKey) &&
+            query.queryKey[0] === 'posts' &&
+            query.queryKey[1] === 'user'
+        });
         queryClient.invalidateQueries({ queryKey: ['posts', 'all'] });
-        queryClient.invalidateQueries({ queryKey: ['posts', 'user'] });
         queryClient.invalidateQueries({ queryKey: ['posts', 'count'] });
         queryClient.invalidateQueries({ queryKey: ['posts', 'recent'] });
-        
         // Add the new post to the cache
         queryClient.setQueryData(['posts', 'single', data.postId], data.post);
       },

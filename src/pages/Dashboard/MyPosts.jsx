@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router';
 
 const MyPosts = () => {
   const { user } = useAuth();
+  console.log('MyPosts user email:', user?.email);
   const { useGetUserPosts, useDeletePost } = usePosts();
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');

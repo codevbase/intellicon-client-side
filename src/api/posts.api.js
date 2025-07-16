@@ -1,4 +1,14 @@
 import axiosSecure from './axiosSecure';
+// Get total post count
+export const getTotalPostCount = async () => {
+  try {
+    const response = await axiosSecure.get('/posts/count');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching post count:', error);
+    throw error;
+  }
+};
 
 // Get all posts with pagination and sorting
 export const getAllPosts = async (page = 1, limit = 5, sortBy = 'newest') => {

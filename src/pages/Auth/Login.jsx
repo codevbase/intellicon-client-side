@@ -15,6 +15,13 @@ const Login = () => {
 
    console.log('Current user in Login:', user);
 
+    const getSafeRedirectPath = (location) => {
+      const from = location?.state?.from;
+      if (!from || typeof from !== 'object' || !from.pathname) return '/dashboard';
+      if (from.pathname === '/login' || from.pathname === '/register') return '/dashboard';
+      return from.pathname;
+    };
+
     const onSubmit = async (data) => {
         try {
             const userCredential = await signInUser(data.email, data.password);
@@ -46,7 +53,8 @@ const Login = () => {
                 }
             }
             
-            navigate(location?.state?.from?.pathname || '/dashboard');
+            const redirectPath = getSafeRedirectPath(location);
+            navigate(redirectPath);
         } catch (err) {
             toast.error(err.message || 'Login failed!');
         }
@@ -81,7 +89,9 @@ const Login = () => {
                 }
             }
             
-            navigate(location?.state?.from?.pathname || '/dashboard');
+            const redirectPath = getSafeRedirectPath(location);
+            navigate(redirectPath);
+            // navigate(location?.state?.from?.pathname||'/');
         } catch (error) {
             toast.error(error.message || 'Google sign-in failed!');
         }

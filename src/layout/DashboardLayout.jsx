@@ -49,7 +49,7 @@ const DashboardLayout = () => {
     { path: '/dashboard/admin-profile', icon: FaCrown, label: 'Admin Profile' },
     { path: '/dashboard/manage-users', icon: FaUsers, label: 'Manage Users' },
     { path: '/dashboard/announcements', icon: FaBullhorn, label: 'Announcements' },
-    { path: '/dashboard/reports', icon: FaFlag, label: 'Reports' },
+    { path: '/dashboard/posts/reported-comments', icon: FaFlag, label: 'Reports' },
   ];
 
   return (

@@ -1,4 +1,13 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { getTotalUserCount } from '../api/users.api';
+// Get total user count (for admin dashboard)
+export const useGetTotalUserCount = () => {
+  return useQuery({
+    queryKey: ['users', 'totalCount'],
+    queryFn: getTotalUserCount,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+};
 import axiosSecure from '../api/axiosSecure';
 
 // Get all users with optional search

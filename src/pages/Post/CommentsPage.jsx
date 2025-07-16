@@ -102,9 +102,9 @@ const CommentsPage = () => {
 
   const comments = data?.comments || [];
 
-  console.log('CommentsPage - postId:', postId);
-  console.log('CommentsPage - data:', data);
-  console.log('CommentsPage - comments:', comments);
+  // console.log('CommentsPage - postId:', postId);
+  // console.log('CommentsPage - data:', data);
+  // console.log('CommentsPage - comments:', comments);
 
   return (
     <div className="max-w-6xl mx-auto py-8 space-y-6">
