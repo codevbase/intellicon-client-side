@@ -4,7 +4,7 @@ import { useAnnouncements } from '../../hooks/useAnnouncements';
 import useAuth from '../../hooks/useAuth';
 
 const Announcements = () => {
-  const { useGetAllAnnouncements, useGetAnnouncementCount, useCreateAnnouncement, useUpdateAnnouncement, useDeleteAnnouncement, useAddSampleAnnouncements } = useAnnouncements();
+  const { useGetAllAnnouncements, useGetAnnouncementCount, useCreateAnnouncement, useUpdateAnnouncement, useDeleteAnnouncement } = useAnnouncements();
   const { user } = useAuth();
   const [currentPage, setCurrentPage] = useState(1);
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -27,7 +27,6 @@ const Announcements = () => {
   const createAnnouncementMutation = useCreateAnnouncement();
   const updateAnnouncementMutation = useUpdateAnnouncement();
   const deleteAnnouncementMutation = useDeleteAnnouncement();
-  const addSampleAnnouncementsMutation = useAddSampleAnnouncements();
 
   // If no announcements, don't render the component
   if (announcementCount === 0) {
@@ -73,10 +72,6 @@ const Announcements = () => {
     if (window.confirm('Are you sure you want to delete this announcement?')) {
       await deleteAnnouncementMutation.mutateAsync(announcementId);
     }
-  };
-
-  const handleAddSample = async () => {
-    await addSampleAnnouncementsMutation.mutateAsync();
   };
 
   const getPriorityIcon = (priority) => {
@@ -168,12 +163,6 @@ const Announcements = () => {
                 >
                   <FaPlus className="w-4 h-4 mr-1" />
                   {editingAnnouncement ? 'Update' : 'New'}
-                </button>
-                <button
-                  onClick={handleAddSample}
-                  className="inline-flex items-center px-3 py-2 border border-gray-300 text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500"
-                >
-                  Add Sample
                 </button>
               </>
             )}
@@ -296,22 +285,52 @@ const Announcements = () => {
       {/* Pagination */}
       {pagination.totalPages > 1 && (
         <div className="px-6 py-4 border-t border-gray-200">
-          <div className="flex items-center justify-between">
-            <div className="text-sm text-gray-700">
+          <div className="flex flex-col items-center justify-center">
+            <div className="text-sm text-gray-700 mb-2">
               Showing page {pagination.currentPage} of {pagination.totalPages}
             </div>
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-1">
               <button
                 onClick={() => setCurrentPage(pagination.currentPage - 1)}
                 disabled={!pagination.hasPrevPage}
-                className="px-3 py-1 text-sm border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                className="px-3 py-2 text-sm border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors duration-200"
               >
                 Previous
               </button>
+              {/* Numbered page buttons */}
+              {(() => {
+                const pageButtons = [];
+                const total = pagination.totalPages;
+                const current = pagination.currentPage;
+                let start = Math.max(1, current - 2);
+                let end = Math.min(total, current + 2);
+                if (current <= 3) {
+                  end = Math.min(5, total);
+                } else if (current >= total - 2) {
+                  start = Math.max(1, total - 4);
+                }
+                for (let i = start; i <= end; i++) {
+                  pageButtons.push(
+                    <button
+                      key={i}
+                      onClick={() => setCurrentPage(i)}
+                      className={`px-3 py-2 text-sm border rounded-md mx-0.5 transition-colors duration-200 ${
+                        i === current
+                          ? 'bg-cyan-600 text-white border-cyan-600 font-semibold'
+                          : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                      }`}
+                      disabled={i === current}
+                    >
+                      {i}
+                    </button>
+                  );
+                }
+                return pageButtons;
+              })()}
               <button
                 onClick={() => setCurrentPage(pagination.currentPage + 1)}
                 disabled={!pagination.hasNextPage}
-                className="px-3 py-1 text-sm border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                className="px-3 py-2 text-sm border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors duration-200"
               >
                 Next
               </button>

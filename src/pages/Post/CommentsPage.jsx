@@ -68,15 +68,6 @@ const CommentsPage = () => {
     setModalComment(null);
   };
 
-  const handleAddSampleComments = async () => {
-    try {
-      await axiosSecure.post(`/posts/${postId}/comments/test`);
-      queryClient.invalidateQueries({ queryKey: ['comments', postId] });
-    } catch (error) {
-      console.error('Error adding sample comments:', error);
-    }
-  };
-
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-64">
@@ -132,13 +123,7 @@ const CommentsPage = () => {
             <p className="text-gray-600">Post ID: {postId}</p>
           </div>
         </div>
-        <button
-          onClick={handleAddSampleComments}
-          className="inline-flex items-center px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors"
-        >
-          <FaComment className="mr-2 h-4 w-4" />
-          Add Sample Comments
-        </button>
+        {/* Remove Add Sample Comments button */}
       </div>
       {/* Comments Table */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">

@@ -4,6 +4,7 @@ import { toast } from 'react-toastify';
 import useAuth from '../../hooks/useAuth';
 import { usePosts } from '../../hooks/usePosts';
 
+
 const AddPost = () => {
   const { user } = useAuth();
   const { useGetUserPostCount, useGetAllTags, useCreatePost } = usePosts();

@@ -45,6 +45,8 @@ const AdminUsers = () => {
     (roleFilter === 'all' || user.role === roleFilter)
   );
 
+  
+
   const handleStatusChange = async (email, newStatus) => {
     try {
       await updateStatusMutation.mutateAsync({ email, status: newStatus });
@@ -291,7 +293,9 @@ const AdminUsers = () => {
                 </th>
               </tr>
             </thead>
+            
             <tbody className="bg-white divide-y divide-gray-200">
+              
               {filteredUsers.map(user => (
                 <tr key={user._id || user.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -304,6 +308,7 @@ const AdminUsers = () => {
                         </div>
                       </div>
                       <div className="ml-4">
+                      
                         <div className="text-sm font-medium text-gray-900">{user.name || user.displayName || 'Unknown User'}</div>
                         <div className="text-sm text-gray-500">{user.email}</div>
                       </div>

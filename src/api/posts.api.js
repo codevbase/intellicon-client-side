@@ -295,3 +295,14 @@ export const handleReportedComment = async (commentId, action) => {
     throw error;
   }
 };
+
+// Get the current user's vote for a post
+export const getUserVoteForPost = async (postId) => {
+  try {
+    const response = await axiosSecure.get(`/posts/${postId}/vote`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching user vote:', error);
+    throw error;
+  }
+};

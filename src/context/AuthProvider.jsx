@@ -49,7 +49,7 @@ const AuthProvider = ({ children }) => {
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
             currentUser? console.log('Current user from observer:', currentUser): console.log('No user is signed in');
-            
+
             // If user is logged in, exchange Firebase ID token for JWT and fetch user data
             if (currentUser) {
               try {

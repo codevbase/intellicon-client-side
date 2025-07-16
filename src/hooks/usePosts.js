@@ -8,7 +8,8 @@ import {
   getUserPostCount, 
   getAllTags, 
   getUserRecentPosts,
-  searchPosts
+  searchPosts,
+  getUserVoteForPost
 } from '../api/posts.api';
 import useAuth from './useAuth';
 
@@ -85,6 +86,16 @@ export const usePosts = () => {
     });
   };
 
+  // Get the current user's vote for a post
+  const useGetUserVoteForPost = (postId) => {
+    return useQuery({
+      queryKey: ['posts', 'vote', postId, user?.email],
+      queryFn: () => getUserVoteForPost(postId),
+      enabled: !!postId && !!user,
+      staleTime: 2 * 60 * 1000, // 2 minutes
+    });
+  };
+
   // Create post mutation
   const useCreatePost = () => {
     return useMutation({
@@ -135,5 +146,6 @@ export const usePosts = () => {
     useSearchPosts,
     useCreatePost,
     useDeletePost,
+    useGetUserVoteForPost,
   };
 };

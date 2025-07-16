@@ -14,8 +14,8 @@ import queryClient from './config/queryClient.js'
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <RouterProvider router={router} />
+    <AuthProvider>
+      <RouterProvider router={router} />
         <ToastContainer
           position="top-right"
           autoClose={5000}
@@ -28,7 +28,7 @@ createRoot(document.getElementById('root')).render(
           pauseOnHover
           theme="light"
         />
-      </AuthProvider>
+    </AuthProvider>
     </QueryClientProvider>
   </StrictMode>,
 )

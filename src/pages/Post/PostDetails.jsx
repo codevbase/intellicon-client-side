@@ -1,17 +1,27 @@
 import React, { useState } from 'react';
 import { useParams, Link } from 'react-router';
-import { FaUser, FaClock, FaEye, FaThumbsUp, FaThumbsDown, FaTag, FaArrowLeft, FaSpinner, FaComment, FaPaperPlane } from 'react-icons/fa';
+import { FaUser, FaClock, FaEye, FaThumbsUp, FaThumbsDown, FaTag, FaArrowLeft, FaSpinner, FaComment, FaPaperPlane, FaShare, FaWhatsapp, FaLink, FaFacebook } from 'react-icons/fa';
 import { usePosts } from '../../hooks/usePosts';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { upvotePost, downvotePost, addComment } from '../../api/posts.api';
 import { toast } from 'react-toastify';
 import useAuth from '../../hooks/useAuth';
+import { FacebookShareButton, WhatsappShareButton } from 'react-share';
 
 const PostDetails = () => {
   const { postId } = useParams();
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const { useGetPostById } = usePosts();
+  const { useGetPostById, useGetUserVoteForPost } = usePosts();
+
+  // Share URL and copy state (must be before any early return)
+  const shareUrl = `${window.location.origin}/post/${postId}`;
+  const [copied, setCopied] = useState(false);
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(shareUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  };
 
   // Fetch post details with author info and related posts
   const { data: post, isLoading, error } = useGetPostById(postId);
@@ -41,12 +51,16 @@ const PostDetails = () => {
     },
   });
 
+  // Fetch user's vote for this post
+  const { data: userVoteData, refetch: refetchUserVote } = useGetUserVoteForPost(postId);
+  const userVoteType = userVoteData?.voteType;
+
   const handleUpvote = () => {
     if (!user) {
       toast.error('Please login to vote');
       return;
     }
-    upvoteMutation.mutate();
+    upvoteMutation.mutate(undefined, { onSuccess: refetchUserVote });
   };
 
   const handleDownvote = () => {
@@ -54,7 +68,7 @@ const PostDetails = () => {
       toast.error('Please login to vote');
       return;
     }
-    downvoteMutation.mutate();
+    downvoteMutation.mutate(undefined, { onSuccess: refetchUserVote });
   };
 
   // Comment state and mutation
@@ -230,7 +244,7 @@ const PostDetails = () => {
                   <div className="flex items-center space-x-2">
                     <FaUser className="w-4 h-4 text-gray-400" />
                     <span className="font-medium text-gray-900">
-                      {post.author.name || 'Unknown User'}
+                      {post.author.name ? post.author.name : post.author.email}
                     </span>
                     {post.author.isMember && (
                       <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
@@ -348,38 +362,61 @@ const PostDetails = () => {
 
         {/* Action Buttons */}
         <div className="mt-8 flex items-center justify-between">
-          <Link
+          {/* <Link
             to="/"
             className="inline-flex items-center px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-md hover:bg-gray-50"
           >
             <FaArrowLeft className="w-4 h-4 mr-2" />
             Back to Posts
-          </Link>
-          
+          </Link> */}
           <div className="flex items-center space-x-4">
             <button 
               onClick={handleUpvote}
               disabled={upvoteMutation.isPending || downvoteMutation.isPending}
-              className={`inline-flex items-center px-4 py-2 border font-medium rounded-md transition-colors ${
+              title="Upvote"
+              className={`inline-flex items-center justify-center px-3 py-2 border font-medium rounded-md transition-colors text-lg ${
                 upvoteMutation.isPending || downvoteMutation.isPending
                   ? 'border-gray-300 text-gray-400 cursor-not-allowed'
-                  : 'border-green-300 text-green-700 hover:bg-green-50'
+                  : userVoteType === 'upvote'
+                    ? 'bg-green-600 text-white border-green-600'
+                    : 'border-green-300 text-green-700 hover:bg-green-50'
               }`}
             >
-              <FaThumbsUp className="w-4 h-4 mr-2" />
-              {upvoteMutation.isPending ? 'Voting...' : 'Upvote'}
+              <FaThumbsUp />
             </button>
             <button 
               onClick={handleDownvote}
               disabled={upvoteMutation.isPending || downvoteMutation.isPending}
-              className={`inline-flex items-center px-4 py-2 border font-medium rounded-md transition-colors ${
+              title="Downvote"
+              className={`inline-flex items-center justify-center px-3 py-2 border font-medium rounded-md transition-colors text-lg ${
                 upvoteMutation.isPending || downvoteMutation.isPending
                   ? 'border-gray-300 text-gray-400 cursor-not-allowed'
-                  : 'border-red-300 text-red-700 hover:bg-red-50'
+                  : userVoteType === 'downvote'
+                    ? 'bg-red-600 text-white border-red-600'
+                    : 'border-red-300 text-red-700 hover:bg-red-50'
               }`}
             >
-              <FaThumbsDown className="w-4 h-4 mr-2" />
-              {downvoteMutation.isPending ? 'Voting...' : 'Downvote'}
+              <FaThumbsDown />
+            </button>
+            {/* Facebook Share Button */}
+            <FacebookShareButton url={shareUrl} quote={post?.title || ''}>
+              <span title="Share on Facebook" className="inline-flex items-center justify-center px-3 py-2 border border-blue-300 text-blue-700 font-medium rounded-md hover:bg-blue-50 text-lg">
+                <FaFacebook />
+              </span>
+            </FacebookShareButton>
+            {/* WhatsApp Share Button */}
+            <WhatsappShareButton url={shareUrl} title={post?.title || ''}>
+              <span title="Share on WhatsApp" className="inline-flex items-center justify-center px-3 py-2 border border-green-300 text-green-700 font-medium rounded-md hover:bg-green-50 text-lg">
+                <FaWhatsapp />
+              </span>
+            </WhatsappShareButton>
+            {/* Copy Link Button */}
+            <button
+              onClick={handleCopyLink}
+              title={copied ? 'Copied!' : 'Copy Link'}
+              className={`inline-flex items-center justify-center px-3 py-2 border border-gray-300 text-gray-700 font-medium rounded-md hover:bg-gray-100 text-lg ${copied ? 'bg-green-100 text-green-700 border-green-300' : ''}`}
+            >
+              <FaLink />
             </button>
           </div>
         </div>

@@ -1,49 +1,18 @@
 import React, { useState } from 'react';
 import { FaSearch, FaEdit, FaTrash, FaUserCheck, FaUserTimes, FaFilter } from 'react-icons/fa';
+import { useGetPaginatedUsers } from '../../hooks/useUsers';
 
 const ManageUsers = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [currentPage, setCurrentPage] = useState(1);
 
-  // Example user data - replace with actual data
-  const [users] = useState([
-    {
-      id: 1,
-      name: 'John Doe',
-      email: 'john.doe@example.com',
-      role: 'user',
-      status: 'active',
-      joinDate: '2024-01-15',
-      posts: 12,
-      lastActive: '2024-01-20'
-    },
-    {
-      id: 2,
-      name: 'Jane Smith',
-      email: 'jane.smith@example.com',
-      role: 'admin',
-      status: 'active',
-      joinDate: '2024-01-10',
-      posts: 25,
-      lastActive: '2024-01-20'
-    },
-    {
-      id: 3,
-      name: 'Mike Wilson',
-      email: 'mike.wilson@example.com',
-      role: 'user',
-      status: 'suspended',
-      joinDate: '2024-01-05',
-      posts: 3,
-      lastActive: '2024-01-18'
-    }
-  ]);
+  // Fetch users with pagination
+  const { data: usersData, isLoading, error } = useGetPaginatedUsers(currentPage, 10, searchTerm, statusFilter);
+  const users = usersData?.users || usersData || [];
+  const pagination = usersData?.pagination || {};
 
-  const filteredUsers = users.filter(user => 
-    (user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-     user.email.toLowerCase().includes(searchTerm.toLowerCase())) &&
-    (statusFilter === 'all' || user.status === statusFilter)
-  );
+  const filteredUsers = users;
 
   const handleStatusChange = (userId, newStatus) => {
     console.log(`Change user ${userId} status to ${newStatus}`);
@@ -131,106 +100,142 @@ const ManageUsers = () => {
       {/* Users table */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  User
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Role
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Posts
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Joined
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Last Active
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {filteredUsers.map(user => (
-                <tr key={user.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0 h-10 w-10">
-                        <div className="h-10 w-10 rounded-full bg-cyan-100 flex items-center justify-center">
-                          <span className="text-sm font-medium text-cyan-600">
-                            {user.name.charAt(0).toUpperCase()}
-                          </span>
+          {isLoading ? (
+            <div className="p-8 text-center text-gray-500">Loading users...</div>
+          ) : error ? (
+            <div className="p-8 text-center text-red-500">Failed to load users.</div>
+          ) : (
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    User
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Role
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Posts
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Joined
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Last Active
+                  </th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {filteredUsers.map(user => (
+                  <tr key={user.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center">
+                        <div className="flex-shrink-0 h-10 w-10">
+                          <div className="h-10 w-10 rounded-full bg-cyan-100 flex items-center justify-center">
+                            <span className="text-sm font-medium text-cyan-600">
+                              {user.name.charAt(0).toUpperCase()}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="ml-4">
+                          <div className="text-sm font-medium text-gray-900">{user.name}</div>
+                          <div className="text-sm text-gray-500">{user.email}</div>
                         </div>
                       </div>
-                      <div className="ml-4">
-                        <div className="text-sm font-medium text-gray-900">{user.name}</div>
-                        <div className="text-sm text-gray-500">{user.email}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {getRoleBadge(user.role)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {getStatusBadge(user.status)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {user.posts}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {new Date(user.joinDate).toLocaleDateString()}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {new Date(user.lastActive).toLocaleDateString()}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <div className="flex items-center justify-end space-x-2">
+                        {user.status === 'active' ? (
+                          <button
+                            onClick={() => handleStatusChange(user.id, 'suspended')}
+                            className="text-yellow-600 hover:text-yellow-900"
+                            title="Suspend user"
+                          >
+                            <FaUserTimes className="w-4 h-4" />
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => handleStatusChange(user.id, 'active')}
+                            className="text-green-600 hover:text-green-900"
+                            title="Activate user"
+                          >
+                            <FaUserCheck className="w-4 h-4" />
+                          </button>
+                        )}
+                        <button
+                          onClick={() => console.log('Edit user:', user.id)}
+                          className="text-blue-600 hover:text-blue-900"
+                          title="Edit user"
+                        >
+                          <FaEdit className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteUser(user.id)}
+                          className="text-red-600 hover:text-red-900"
+                          title="Delete user"
+                        >
+                          <FaTrash className="w-4 h-4" />
+                        </button>
                       </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {getRoleBadge(user.role)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {getStatusBadge(user.status)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {user.posts}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(user.joinDate).toLocaleDateString()}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(user.lastActive).toLocaleDateString()}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <div className="flex items-center justify-end space-x-2">
-                      {user.status === 'active' ? (
-                        <button
-                          onClick={() => handleStatusChange(user.id, 'suspended')}
-                          className="text-yellow-600 hover:text-yellow-900"
-                          title="Suspend user"
-                        >
-                          <FaUserTimes className="w-4 h-4" />
-                        </button>
-                      ) : (
-                        <button
-                          onClick={() => handleStatusChange(user.id, 'active')}
-                          className="text-green-600 hover:text-green-900"
-                          title="Activate user"
-                        >
-                          <FaUserCheck className="w-4 h-4" />
-                        </button>
-                      )}
-                      <button
-                        onClick={() => console.log('Edit user:', user.id)}
-                        className="text-blue-600 hover:text-blue-900"
-                        title="Edit user"
-                      >
-                        <FaEdit className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteUser(user.id)}
-                        className="text-red-600 hover:text-red-900"
-                        title="Delete user"
-                      >
-                        <FaTrash className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
       </div>
+
+      {/* Pagination */}
+      {pagination.totalPages > 1 && (
+        <div className="flex items-center justify-center space-x-2 mt-6">
+          <button
+            className="px-3 py-1 rounded border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 disabled:opacity-50"
+            onClick={() => setCurrentPage(pagination.currentPage - 1)}
+            disabled={!pagination.hasPrevPage}
+          >
+            Prev
+          </button>
+          {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map(page => (
+            <button
+              key={page}
+              className={`px-3 py-1 rounded border ${page === pagination.currentPage ? 'bg-cyan-600 text-white border-cyan-600' : 'bg-white text-gray-700 border-gray-300'} hover:bg-cyan-50`}
+              onClick={() => setCurrentPage(page)}
+              disabled={page === pagination.currentPage}
+            >
+              {page}
+            </button>
+          ))}
+          <button
+            className="px-3 py-1 rounded border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 disabled:opacity-50"
+            onClick={() => setCurrentPage(pagination.currentPage + 1)}
+            disabled={!pagination.hasNextPage}
+          >
+            Next
+          </button>
+        </div>
+      )}
 
       {/* Empty state */}
       {filteredUsers.length === 0 && (

@@ -24,18 +24,18 @@ const Login = () => {
             // Send user info to backend
             try {
                 const response = await axiosInstance.post('/users', {
-                    name: userInfo.displayName || '',
-                    email: userInfo.email,
-                    photoURL: userInfo.photoURL || '',
-                    role: 'user'
-                });
+                name: userInfo.displayName || '',
+                email: userInfo.email,
+                photoURL: userInfo.photoURL || '',
+                role: 'user'
+            });
                 
                 // Show badge information if it's a new user
                 if (response.data.success && response.data.user.badge) {
                     const badgeDescription = BADGE_DESCRIPTIONS[response.data.user.badge];
                     toast.success(`Login successful! Welcome back with your "${response.data.user.badge}" badge. ${badgeDescription}`);
                 } else {
-                    toast.success('Login successful!');
+            toast.success('Login successful!');
                 }
             } catch (error) {
                 // If user already exists (409), that's fine - they can still login
@@ -59,18 +59,18 @@ const Login = () => {
             // Send user info to backend
             try {
                 const response = await axiosInstance.post('/users', {
-                    name: userInfo.displayName || '',
-                    email: userInfo.email,
-                    photoURL: userInfo.photoURL || '',
-                    role: 'user'
-                });
+                name: userInfo.displayName || '',
+                email: userInfo.email,
+                photoURL: userInfo.photoURL || '',
+                role: 'user'
+            });
                 
                 // Show badge information if it's a new user
                 if (response.data.success && response.data.user.badge) {
                     const badgeDescription = BADGE_DESCRIPTIONS[response.data.user.badge];
                     toast.success(`Signed in with Google! Welcome with your "${response.data.user.badge}" badge. ${badgeDescription}`);
                 } else {
-                    toast.success('Signed in with Google!');
+            toast.success('Signed in with Google!');
                 }
             } catch (error) {
                 // If user already exists (409), that's fine - they can still login

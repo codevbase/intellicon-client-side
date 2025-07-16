@@ -3,7 +3,6 @@ import { FaSearch, FaFilter, FaSort, FaEye, FaThumbsUp, FaThumbsDown, FaUser, Fa
 import { usePosts } from '../../hooks/usePosts';
 import { Link } from 'react-router';
 import Announcements from '../../components/Announcements/Announcements';
-import AnnouncementTest from '../../components/AnnouncementTest';
 
 const Home = () => {
   const { useGetAllPosts, useSearchPosts, useGetAllTags } = usePosts();
@@ -165,9 +164,6 @@ const Home = () => {
       {/* Announcements Section */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Announcements />
-        <div className="mt-4">
-          <AnnouncementTest />
-        </div>
       </div>
 
       {/* Search Results Section */}
@@ -266,26 +262,53 @@ const Home = () => {
 
         {/* Pagination */}
         {pagination.totalPages > 1 && (
-          <div className="flex items-center justify-between bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="text-sm text-gray-700">
+          <div className="flex flex-col items-center justify-center bg-white rounded-lg shadow-sm border border-gray-200 p-6 mt-4">
+            <div className="text-sm text-gray-700 mb-2">
               Showing page {pagination.currentPage} of {pagination.totalPages} 
               ({pagination.totalPosts} total posts)
             </div>
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-1">
               <button
                 onClick={() => handlePageChange(pagination.currentPage - 1)}
                 disabled={!pagination.hasPrevPage}
-                className="px-4 py-2 text-sm border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors duration-200"
+                className="px-3 py-2 text-sm border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors duration-200"
               >
                 Previous
               </button>
-              <span className="px-4 py-2 text-sm text-gray-700 bg-gray-50 rounded-md">
-                {pagination.currentPage}
-              </span>
+              {/* Numbered page buttons */}
+              {(() => {
+                const pageButtons = [];
+                const total = pagination.totalPages;
+                const current = pagination.currentPage;
+                let start = Math.max(1, current - 2);
+                let end = Math.min(total, current + 2);
+                if (current <= 3) {
+                  end = Math.min(5, total);
+                } else if (current >= total - 2) {
+                  start = Math.max(1, total - 4);
+                }
+                for (let i = start; i <= end; i++) {
+                  pageButtons.push(
+                    <button
+                      key={i}
+                      onClick={() => handlePageChange(i)}
+                      className={`px-3 py-2 text-sm border rounded-md mx-0.5 transition-colors duration-200 ${
+                        i === current
+                          ? 'bg-cyan-600 text-white border-cyan-600 font-semibold'
+                          : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                      }`}
+                      disabled={i === current}
+                    >
+                      {i}
+                    </button>
+                  );
+                }
+                return pageButtons;
+              })()}
               <button
                 onClick={() => handlePageChange(pagination.currentPage + 1)}
                 disabled={!pagination.hasNextPage}
-                className="px-4 py-2 text-sm border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors duration-200"
+                className="px-3 py-2 text-sm border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors duration-200"
               >
                 Next
               </button>
@@ -317,8 +340,8 @@ const Home = () => {
           </div>
         )}
       </div>
-    </div>
-  );
+        </div>
+    );
 };
 
 export default Home;

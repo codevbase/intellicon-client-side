@@ -3,10 +3,14 @@ import { FaUser, FaEnvelope, FaPhone, FaEdit, FaSave, FaTimes, FaCrown, FaMedal,
 import useAuth from '../../hooks/useAuth';
 import { usePosts } from '../../hooks/usePosts';
 import { Link } from 'react-router';
+import  { useGetUserByEmail }  from '../../hooks/useUsers';
 
 const MyProfile = () => {
   const { user } = useAuth();
+  // console.log('user inside my profile', user);
+  
   const { useGetUserPostCount, useGetUserRecentPosts } = usePosts();
+  
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     displayName: user?.displayName || '',
@@ -15,9 +19,12 @@ const MyProfile = () => {
     bio: user?.bio || 'No bio available'
   });
 
-  // Fetch user stats and recent posts
+  // Fetch user stats, recent posts and user role
   const { data: userStats, isLoading: isLoadingStats } = useGetUserPostCount(user?.email);
   const { data: recentPosts, isLoading: isLoadingPosts } = useGetUserRecentPosts(user?.email, 3);
+  const { data: userRoleData, isLoading: isLoadingRole } = useGetUserByEmail(user?.email);
+  console.log('userRoleData', userRoleData);
+  
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -89,19 +96,26 @@ const MyProfile = () => {
                 {user?.displayName || 'User Name'}
               </h2>
               <p className="text-gray-500">{user?.email}</p>
+              {/* User Role */}
+              {!isLoadingRole && userRoleData?.role && (
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 mt-1">
+                  {userRoleData.role.charAt(0).toUpperCase() + userRoleData.role.slice(1)}
+                </span>
+              )}
               
               {/* Badges Section */}
               <div className="mt-4 space-y-2">
                 <h3 className="text-sm font-medium text-gray-700">Badges</h3>
                 <div className="flex justify-center space-x-3">
-                  {/* Bronze Badge - Always visible for registered users */}
-                  <div className="flex flex-col items-center">
-                    <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center border-2 border-amber-400">
-                      <FaMedal className="w-6 h-6 text-amber-600" />
+                  {/* Bronze Badge - Only visible for non-members */}
+                  {!userStats?.isMember && (
+                    <div className="flex flex-col items-center">
+                      <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center border-2 border-amber-400">
+                        <FaMedal className="w-6 h-6 text-amber-600" />
+                      </div>
+                      <span className="text-xs text-gray-600 mt-1">Bronze</span>
                     </div>
-                    <span className="text-xs text-gray-600 mt-1">Bronze</span>
-                  </div>
-                  
+                  )}
                   {/* Gold Badge - Only visible for members */}
                   {userStats?.isMember && (
                     <div className="flex flex-col items-center">
