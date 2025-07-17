@@ -121,10 +121,10 @@ const router = createBrowserRouter([
                 path: "manage-users",
                 element: <AdminRoute><ManageUsers /></AdminRoute>,
             },
-            // {
-            //     path: "reports",
-            //     element: <AdminRoute><Reports /></AdminRoute>,
-            // },
+            {
+                path: "posts/reported-comments",
+                element: <Reports />
+            },
             {
                 path: "announcements",
                 element: <AdminRoute><AdminAnnouncements /></AdminRoute>,
