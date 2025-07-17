@@ -8,6 +8,7 @@ import { useGetTotalPostCount } from '../../hooks/usePosts';
 import { useGetTotalCommentCount } from '../../hooks/useComments';
 
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { Helmet } from 'react-helmet-async';
 
 const AdminProfile = () => {
     const { user } = useAuth();
@@ -209,7 +210,7 @@ const AdminProfile = () => {
                                 </PieChart>
                             </ResponsiveContainer>
                         </div>
-                        
+
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                             <div className="bg-blue-50 rounded-lg p-4">
                                 <div className="flex items-center">
@@ -220,7 +221,7 @@ const AdminProfile = () => {
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <div className="bg-green-50 rounded-lg p-4">
                                 <div className="flex items-center">
                                     <FaEye className="w-6 h-6 text-green-600" />
@@ -230,7 +231,7 @@ const AdminProfile = () => {
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <div className="bg-purple-50 rounded-lg p-4">
                                 <div className="flex items-center">
                                     <FaBullhorn className="w-6 h-6 text-purple-600" />
@@ -240,7 +241,7 @@ const AdminProfile = () => {
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <div className="bg-red-50 rounded-lg p-4">
                                 <div className="flex items-center">
                                     <FaFlag className="w-6 h-6 text-red-600" />
@@ -270,7 +271,7 @@ const AdminProfile = () => {
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <div className="bg-gray-50 rounded-lg p-4">
                                 <h4 className="text-sm font-medium text-gray-900 mb-2">Content Stats</h4>
                                 <div className="space-y-2 text-sm">
@@ -295,7 +296,7 @@ const AdminProfile = () => {
                     <FaUserShield className="w-5 h-5 mr-2 text-purple-600" />
                     Admin Permissions
                 </h3>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {permissions.map((permission) => (
                         <div key={permission.id} className="flex items-start space-x-3 p-4 border border-gray-200 rounded-lg">
@@ -335,15 +336,15 @@ const AdminProfile = () => {
                     </button>
                 </div>
             </div>
-        {/* Tag Management Form */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mt-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                <FaDatabase className="w-5 h-5 mr-2 text-purple-600" />
-                Tag Management
-            </h3>
-            <TagManagement />
+            {/* Tag Management Form */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mt-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                    <FaDatabase className="w-5 h-5 mr-2 text-purple-600" />
+                    Tag Management
+                </h3>
+                <TagManagement />
+            </div>
         </div>
-    </div>
     );
 };
 
@@ -385,52 +386,57 @@ const TagManagement = () => {
     };
 
     return (
-        <div>
-            <form onSubmit={handleAddTag} className="flex items-center space-x-2 mb-4">
-                <input
-                    type="text"
-                    value={newTag}
-                    onChange={e => setNewTag(e.target.value)}
-                    placeholder="Add new tag"
-                    className="flex-1 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                    disabled={addTagMutation.isLoading}
-                />
-                <button
-                    type="submit"
-                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
-                    disabled={addTagMutation.isLoading}
-                >
-                    {addTagMutation.isLoading ? 'Adding...' : 'Add Tag'}
-                </button>
-            </form>
-            {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
-            {isLoading ? (
-                <span className="text-gray-500">Loading tags...</span>
-            ) : isError ? (
-                <span className="text-red-500">Failed to load tags</span>
-            ) : (
-                <div className="flex flex-wrap gap-2">
-                    {tags.length === 0 ? (
-                        <span className="text-gray-500">No tags added yet.</span>
-                    ) : (
-                        tags.map(tag => (
-                            <span key={tag} className="inline-flex items-center px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm font-medium">
-                                {tag}
-                                <button
-                                    type="button"
-                                    onClick={() => handleRemoveTag(tag)}
-                                    className="ml-2 text-purple-500 hover:text-purple-700 focus:outline-none"
-                                    title="Remove tag"
-                                    disabled={removeTagMutation.isLoading}
-                                >
-                                    <FaTimes className="w-3 h-3" />
-                                </button>
-                            </span>
-                        ))
-                    )}
-                </div>
-            )}
-        </div>
+        <>
+            <Helmet>
+                <title>Admin Profile - IntelliCon Forum</title>
+            </Helmet>
+            <div>
+                <form onSubmit={handleAddTag} className="flex items-center space-x-2 mb-4">
+                    <input
+                        type="text"
+                        value={newTag}
+                        onChange={e => setNewTag(e.target.value)}
+                        placeholder="Add new tag"
+                        className="flex-1 border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        disabled={addTagMutation.isLoading}
+                    />
+                    <button
+                        type="submit"
+                        className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+                        disabled={addTagMutation.isLoading}
+                    >
+                        {addTagMutation.isLoading ? 'Adding...' : 'Add Tag'}
+                    </button>
+                </form>
+                {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
+                {isLoading ? (
+                    <span className="text-gray-500">Loading tags...</span>
+                ) : isError ? (
+                    <span className="text-red-500">Failed to load tags</span>
+                ) : (
+                    <div className="flex flex-wrap gap-2">
+                        {tags.length === 0 ? (
+                            <span className="text-gray-500">No tags added yet.</span>
+                        ) : (
+                            tags.map(tag => (
+                                <span key={tag} className="inline-flex items-center px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm font-medium">
+                                    {tag}
+                                    <button
+                                        type="button"
+                                        onClick={() => handleRemoveTag(tag)}
+                                        className="ml-2 text-purple-500 hover:text-purple-700 focus:outline-none"
+                                        title="Remove tag"
+                                        disabled={removeTagMutation.isLoading}
+                                    >
+                                        <FaTimes className="w-3 h-3" />
+                                    </button>
+                                </span>
+                            ))
+                        )}
+                    </div>
+                )}
+            </div>
+        </>
     );
 };
 
