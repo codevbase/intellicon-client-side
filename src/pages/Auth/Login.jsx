@@ -11,23 +11,26 @@ const Login = () => {
     const { register, handleSubmit, formState: { errors } } = useForm();
     const navigate = useNavigate();
     const location = useLocation();
-    const { user, signInUser, loading, signInWithGoogle } = useAuth();
+    const { signInUser, loading, signInWithGoogle } = useAuth();
 
-   console.log('Current user in Login:', user);
+//    console.log('Current user in Login:', user);
 
-    const getSafeRedirectPath = (location) => {
-      const from = location?.state?.from;
-      if (!from || typeof from !== 'object' || !from.pathname) return '/dashboard';
-      if (from.pathname === '/login' || from.pathname === '/register') return '/dashboard';
-      return from.pathname;
-    };
+    // const getSafeRedirectPath = (location) => {
+    //   const from = location?.state?.from;
+    //   if (!from || typeof from !== 'object' || !from.pathname) return '/dashboard';
+    //   if (from.pathname === '/login' || from.pathname === '/register') return '/dashboard';
+    //   return from.pathname;
+    // };
 
     const onSubmit = async (data) => {
         try {
+            // console.log('Login data:', data);
+            // console.log('data email: ', data.email);
             const userCredential = await signInUser(data.email, data.password);
-            console.log('User credential from login:', userCredential);
+            
+            // console.log('User credential from login:', userCredential);
             const userInfo = userCredential.user;
-            console.log('User info from login:', userInfo);
+            // console.log('User info from login:', userInfo);
             // Send user info to backend
             try {
                 const response = await axiosInstance.post('/users', {
@@ -36,6 +39,7 @@ const Login = () => {
                 photoURL: userInfo.photoURL || '',
                 role: 'user'
             });
+            console.log('User response from backend:', response);
                 
                 // Show badge information if it's a new user
                 if (response.data.success && response.data.user.badge) {
@@ -53,8 +57,8 @@ const Login = () => {
                 }
             }
             
-            const redirectPath = getSafeRedirectPath(location);
-            navigate(redirectPath);
+            // const redirectPath = getSafeRedirectPath(location);
+            navigate(location?.state?.from?.pathname || '/dashboard');
         } catch (err) {
             toast.error(err.message || 'Login failed!');
         }
@@ -89,9 +93,9 @@ const Login = () => {
                 }
             }
             
-            const redirectPath = getSafeRedirectPath(location);
-            navigate(redirectPath);
-            // navigate(location?.state?.from?.pathname||'/');
+            // const redirectPath = getSafeRedirectPath(location);
+            // navigate(redirectPath);
+            navigate(location?.state?.from?.pathname||'/dashboard');
         } catch (error) {
             toast.error(error.message || 'Google sign-in failed!');
         }

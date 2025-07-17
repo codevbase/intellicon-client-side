@@ -49,15 +49,22 @@ const AuthProvider = ({ children }) => {
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
             currentUser? console.log('Current user from observer:', currentUser): console.log('No user is signed in');
+                     
+            
+                         
 
             // If user is logged in, exchange Firebase ID token for JWT and fetch user data
             if (currentUser) {
               try {
-                const idToken = await currentUser.getIdToken();
+                const idToken = await currentUser.getIdToken();                    
+                
+                
                 await axiosSecure.post('/jwt', {}, {
                   headers: {
                     Authorization: `Bearer ${idToken}`
-                  }
+                  },                  
+                  withCredentials: true // Ensure cookies are sent with the request
+                  
                 }).then(res => {
                     console.log('token after jwt', res.data);
                 }).catch(err => {
