@@ -27,6 +27,7 @@ import ApiTest from "../components/ApiTest";
 import AdminTest from "../components/AdminTest";
 import AdminSetup from "../components/AdminSetup";
 import Notification from "../pages/Dashboard/Notification";
+import Analytics from "../pages/Admin/Analytics";
 
 
 
@@ -159,6 +160,10 @@ const router = createBrowserRouter([
                 path: "profile",
                 element: <AdminProfile />,
             },
+            {
+                path: "analytics",
+                element: <Analytics />
+            }
             
         ]
     },

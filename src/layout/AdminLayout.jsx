@@ -49,7 +49,7 @@ const AdminLayout = () => {
       title: 'User Management',
       items: [
         { path: '/admin/users', icon: FaUsers, label: 'Manage Users' },
-        { path: '/admin/roles', icon: FaUserShield, label: 'Roles & Permissions' },
+        // { path: '/admin/roles', icon: FaUserShield, label: 'Roles & Permissions' },
       ]
     },
     {
@@ -57,16 +57,16 @@ const AdminLayout = () => {
       items: [
         { path: '/admin/make-announcement', icon: FaBullhorn, label: 'Create Announcement' },
         { path: '/admin/announcements', icon: FaClipboardList, label: 'Manage Announcements' },
-        { path: '/admin/posts', icon: FaClipboardList, label: 'Manage Posts' },
-        { path: '/admin/comments', icon: FaFlag, label: 'Moderate Comments' },
+        // { path: '/admin/posts', icon: FaClipboardList, label: 'Manage Posts' },
+        // { path: '/admin/comments', icon: FaFlag, label: 'Moderate Comments' },
       ]
     },
     {
       title: 'System',
       items: [
         { path: '/admin/posts/reported-comments', icon: FaExclamationTriangle, label: 'Reports' },
-        { path: '/admin/settings', icon: FaCog, label: 'System Settings' },
-        { path: '/admin/logs', icon: FaServer, label: 'System Logs' },
+        // { path: '/admin/settings', icon: FaCog, label: 'System Settings' },
+        // { path: '/admin/logs', icon: FaServer, label: 'System Logs' },
       ]
     }
   ];
