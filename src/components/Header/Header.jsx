@@ -61,7 +61,7 @@ const Header = () => {
     };
 
     return (
-        <div className={`shadow-3xl bg-cyan-100`}>
+        <div className={`shadow-3xl bg-cyan-100 sticky top-0 z-50 `}>
             <div className='w-11/12 mx-auto navbar'>
                 <div className="navbar-start">
                     <div className="dropdown">

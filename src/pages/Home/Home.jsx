@@ -151,7 +151,7 @@ const Home = () => {
               <div className="mt-8 text-center">
                 <p className="text-cyan-100 mb-4 text-lg">Popular tags:</p>
                 <div className="flex flex-wrap justify-center gap-2">
-                  {availableTags.slice(0, 8).map(tag => (
+                  {availableTags.slice(0, 3).map(tag => (
                     <button
                       key={tag}
                       onClick={() => handleTagClick(tag)}
