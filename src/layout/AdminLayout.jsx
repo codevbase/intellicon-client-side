@@ -42,6 +42,7 @@ const AdminLayout = () => {
       title: 'Overview',
       items: [
         { path: '/admin', icon: FaChartBar, label: 'Dashboard', exact: true },
+        { path: '/admin/profile', icon: FaCrown, label: 'Admin Profile' },
         { path: '/admin/analytics', icon: FaDatabase, label: 'Analytics' },
       ]
     },
